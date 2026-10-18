@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>네차흐 섬 설계도</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* Layout: 3D 섬 미리보기(왼쪽) + 구역 목록(오른쪽), 좁으면 위아래로 */
+:root {
+  --night: #0b1416;
+  --night-2: #142224;
+  --ink: #e4f2ec;
+  --ink-dim: #9fbab0;
+  --netzach: #2fae6a;
+  --coral: #ff8a8a;
+  --line: #24393a;
+  --fight: #e0607a;
+  --save: #8fe3d0;
+  --display: "Gowun Batang", "Nanum Myeongjo", serif;
+  --body: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  color-scheme: dark;
+}
+body {
+  background: radial-gradient(1200px 700px at 30% -10%, #173236 0%, var(--night) 60%) fixed, var(--night);
+  color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.6;
+}
+.wrap {
+  max-width: 1180px; margin: 0 auto; padding-block: 28px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 20px;
+}
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(26px, 4vw, 38px); margin: 0; text-wrap: balance; }
+header p { margin: 6px 0 0; color: var(--ink-dim); max-width: 64ch; }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 20px; align-items: start; }
+@media (max-width: 880px) { .main { grid-template-columns: minmax(0, 1fr); } }
+.stage {
+  position: relative; height: min(72vh, 680px); min-height: 420px;
+  border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+  background: #081012; touch-action: none;
+}
+.stage canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+.labels { position: absolute; inset: 0; pointer-events: none; }
+.tag {
+  position: absolute; transform: translate(-50%, -130%);
+  font-size: 12px; font-weight: 500; white-space: nowrap; padding: 2px 9px; border-radius: 999px;
+  background: rgba(11, 20, 22, 0.8); border: 1px solid rgba(47, 174, 106, 0.45); color: var(--ink);
+}
+.tag .n { color: var(--netzach); margin-right: 4px; font-weight: 700; }
+.tag.opt { border-style: dashed; }
+.tag.boss { border-color: var(--coral); color: #fff; }
+.tag.dark { color: #e7a9b7; border-color: rgba(176, 71, 94, 0.4); background: rgba(30, 10, 18, 0.75); }
+.controls { position: absolute; left: 12px; bottom: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+.controls button {
+  font: inherit; font-size: 13px; color: var(--ink); background: rgba(20, 34, 36, 0.92);
+  border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; cursor: pointer;
+}
+.controls button:hover { border-color: var(--netzach); }
+.controls button:focus-visible { outline: 2px solid var(--netzach); outline-offset: 2px; }
+.hint { position: absolute; right: 12px; top: 10px; font-size: 12px; color: var(--ink-dim); background: rgba(11, 20, 22, 0.6); padding: 3px 8px; border-radius: 6px; }
+aside { display: grid; gap: 14px; min-width: 0; }
+.panel { background: var(--night-2); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+.panel h3 { font-size: 12px; letter-spacing: 0.08em; color: var(--ink-dim); margin: 0 0 10px; font-weight: 700; }
+.zones { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.zones li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; }
+.zones .num { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700; color: var(--night); background: var(--netzach); }
+.zones li.opt .num { background: transparent; color: var(--netzach); border: 1px dashed var(--netzach); }
+.zones li.boss .num { background: var(--coral); }
+.zones b { font-weight: 700; }
+.zones .meta { font-size: 12px; color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+.zones p { margin: 2px 0 0; font-size: 14px; }
+.legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 14px; }
+.legend li { display: flex; align-items: center; gap: 8px; }
+.mk { width: 12px; height: 12px; flex: none; }
+.mk.fight { background: var(--fight); transform: rotate(45deg) scale(0.8); }
+.mk.save { background: var(--save); border-radius: 50%; box-shadow: 0 0 8px var(--save); }
+.mk.path { height: 4px; background: #e6fff3; border-radius: 2px; }
+.mk.dash { height: 0; border-top: 3px dashed #e6fff3; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>네차흐 섬 설계도</h1>
+    <p>2챕터(감정의 길) 섬. 거품 바다 위에 뜬 꽃잎 다섯 장짜리 꽃 모양 섬이에요. 동화는 인어공주. 꽃잎을 하나씩 돌며 수련 잎 다리로 건너가고, 마지막에 꽃 한가운데 꽃술 무대에서 보스와 싸웁니다. 드래그해서 돌려 보세요.</p>
+  </header>
+  <div class="main">
+    <div class="stage" id="stage">
+      <canvas id="c" aria-label="네차흐 섬 3D 미리보기"></canvas>
+      <div class="labels" id="labels"></div>
+      <div class="hint">드래그: 회전 · 휠/버튼: 확대</div>
+      <div class="controls">
+        <button type="button" id="vTop">위에서</button>
+        <button type="button" id="vAngle">비스듬히</button>
+        <button type="button" id="vStage">꽃술 무대 가까이</button>
+        <button type="button" id="vUnder">섬 아래</button>
+        <button type="button" id="tLabels" aria-pressed="true">글자 표시</button>
+        <button type="button" id="zIn" aria-label="확대">＋</button>
+        <button type="button" id="zOut" aria-label="축소">－</button>
+      </div>
+    </div>
+    <aside>
+      <div class="panel">
+        <h3>구역 순서 (길을 따라)</h3>
+        <ol class="zones">
+          <li><span class="num">1</span><div><b>거품 해변</b> <span class="meta">Lv 5 · 도착 · 전투 2</span><p>예소드에서 올라오는 물기둥을 타고 앞쪽 꽃잎 끝에 도착. 저장 지점.</p></div></li>
+          <li><span class="num">2</span><div><b>산호 정원</b> <span class="meta">Lv 5~6 · 전투 3</span><p>두 번째 꽃잎. 색색의 산호가 자라는 정원. 감정에 따라 색이 바뀌는 산호 퍼즐.</p></div></li>
+          <li><span class="num">3</span><div><b>노래하는 조개 골짜기</b> <span class="meta">Lv 6 · 전투 2 · 저장</span><p>세 번째 꽃잎. 조개마다 다른 음을 내고, 들려준 노래를 따라 치면 길이 열림.</p></div></li>
+          <li class="opt"><span class="num">+</span><div><b>진주 동굴</b> <span class="meta">선택 · 전투 2~3</span><p>세 번째 꽃잎 끝에서 이어진 작은 조개 섬. 노가다·보물 구역.</p></div></li>
+          <li><span class="num">4</span><div><b>해파리 숲</b> <span class="meta">Lv 6~7 · 전투 3</span><p>네 번째 꽃잎. 떠다니는 해파리 등불 사이를 지나감. 어두워서 등불 근처만 보임.</p></div></li>
+          <li><span class="num">5</span><div><b>가시 산호 성벽</b> <span class="meta">Lv 7 · 엘리트</span><p>다섯 번째 꽃잎. 가시 산호로 둘러싸인 성벽을 엘리트가 지킴. 지나면 꽃 한가운데로 가는 거품 다리.</p></div></li>
+          <li class="boss"><span class="num">6</span><div><b>꽃술 무대</b> <span class="meta">Lv 8 · 보스</span><p>꽃 한가운데 둥근 무대. 바닥에 금성의 오각별이 빛나고, 목소리를 빼앗는 바다 마녀와 싸움.</p></div></li>
+        </ol>
+      </div>
+      <div class="panel">
+        <h3>표시</h3>
+        <ul class="legend">
+          <li><span class="mk path"></span>메인 길</li>
+          <li><span class="mk dash"></span>선택 길 (점선)</li>
+          <li><span class="mk fight"></span>전투가 있는 곳 (보이는 적)</li>
+          <li><span class="mk save"></span>저장·회복 지점</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>이 형태로 한 이유</h3>
+        <ul class="legend" style="gap:9px">
+          <li>네차흐는 감정·사랑·자연·예술의 세피라라서 땅을 꽃으로</li>
+          <li>꽃잎이 5장인 건 금성 때문. 금성은 8년 동안 하늘에 오각별 모양 궤도를 그려서, 예로부터 금성의 상징이 오각별</li>
+          <li>인어공주처럼 꽃이 바다 거품 위에 떠 있음 (금성의 여신도 바다 거품에서 태어났다는 신화가 있음)</li>
+          <li>꽃잎을 차례로 돌다가 가운데로 들어가는 구조라 보스 무대가 늘 시야에 있음</li>
+          <li>섬 아래에는 시든 검은 꽃과 까마귀 떼가 거꾸로 비침 (아아브 자라크: 흩어지는 까마귀, 동화 『일곱 마리 까마귀』)</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+  const stage = document.getElementById("stage");
+  const canvas = document.getElementById("c");
+  const labelsEl = document.getElementById("labels");
+  if (!window.THREE) {
+    labelsEl.innerHTML = '<div style="position:absolute;inset:0;display:grid;place-items:center;color:#9fbab0">3D 미리보기를 불러오지 못했어요. 새로고침해 보세요.</div>';
+    return;
+  }
+  const reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+  const scene = new THREE.Scene();
+  const BG = 0x081012;
+  scene.background = new THREE.Color(BG);
+  scene.fog = new THREE.FogExp2(BG, 0.008);
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 500);
+  scene.add(new THREE.HemisphereLight(0xc8fff0, 0x10202a, 0.8));
+  const key = new THREE.DirectionalLight(0xf0fff8, 0.8);
+  key.position.set(-20, 40, 25);
+  scene.add(key);
+
+  // 별 + 금성
+  {
+    const g = new THREE.BufferGeometry(), n = 600, p = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) {
+      const r = 150 + Math.random() * 50, t = Math.random() * Math.PI * 2, f = Math.random() * 1.2;
+      p[i*3] = r * Math.cos(t) * Math.cos(f); p[i*3+1] = r * Math.sin(f) + 10; p[i*3+2] = r * Math.sin(t) * Math.cos(f);
+    }
+    g.setAttribute("position", new THREE.BufferAttribute(p, 3));
+    scene.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0xe0fff4, size: 0.5, fog: false })));
+    const venus = new THREE.Mesh(new THREE.SphereGeometry(2.4, 24, 16), new THREE.MeshBasicMaterial({ color: 0xfff6d8, fog: false }));
+    venus.position.set(70, 50, -90);
+    scene.add(venus);
+  }
+
+  // 거품 바다
+  const SEA_Y = -0.6;
+  const sea = new THREE.Mesh(new THREE.CircleGeometry(34, 64), new THREE.MeshStandardMaterial({ color: 0x2a7f86, transparent: true, opacity: 0.45, roughness: 0.15, metalness: 0.3, depthWrite: false, side: THREE.DoubleSide }));
+  sea.rotation.x = -Math.PI / 2; sea.position.y = SEA_Y;
+  scene.add(sea);
+  const foam = [];
+  {
+    const fm = new THREE.MeshStandardMaterial({ color: 0xf2fffb, roughness: 0.4, transparent: true, opacity: 0.85 });
+    for (let i = 0; i < 160; i++) {
+      const a = Math.random() * Math.PI * 2, r = 19 + Math.random() * 15;
+      const b = new THREE.Mesh(new THREE.SphereGeometry(0.25 + Math.random() * 0.45, 8, 6), fm);
+      b.position.set(Math.cos(a) * r, SEA_Y + 0.1, Math.sin(a) * r);
+      scene.add(b); foam.push({ m: b, ph: Math.random() * 6 });
+    }
+  }
+  // 바다 아래로 늘어진 산호 줄기
+  {
+    const cm = new THREE.MeshStandardMaterial({ color: 0xd8667a, roughness: 0.8, flatShading: true });
+    for (let i = 0; i < 9; i++) {
+      const a = i / 9 * Math.PI * 2, r = 4 + (i % 3) * 3;
+      const h = 10 + (i % 4) * 3;
+      const m = new THREE.Mesh(new THREE.ConeGeometry(1.2 + (i % 2), h, 7), cm);
+      m.rotation.x = Math.PI; m.position.set(Math.cos(a) * r, SEA_Y - h / 2, Math.sin(a) * r);
+      scene.add(m);
+    }
+  }
+
+  // 꽃잎 다섯 장 (앞쪽 꽃잎이 도착 지점)
+  const PETALS = 5;
+  const petalAngle = i => Math.PI + i * (Math.PI * 2 / PETALS);
+  const dirOf = i => { const a = petalAngle(i); return new THREE.Vector3(-Math.sin(a), 0, -Math.cos(a)); };
+  const TOP = 1.5; // 꽃잎 윗면 높이
+  const petalShape = new THREE.Shape();
+  petalShape.moveTo(0, 0);
+  petalShape.bezierCurveTo(-7, 5, -6.5, 15, 0, 19);
+  petalShape.bezierCurveTo(6.5, 15, 7, 5, 0, 0);
+  const petalGeo = new THREE.ExtrudeGeometry(petalShape, { depth: 1.1, bevelEnabled: true, bevelThickness: 0.35, bevelSize: 0.5, bevelSegments: 2, curveSegments: 24 });
+  const petalColors = [0x58c98d, 0x3fb87d, 0x2fae6a, 0x4cc28a, 0x239960];
+  for (let i = 0; i < PETALS; i++) {
+    const g = new THREE.Group();
+    g.rotation.y = petalAngle(i);
+    const m = new THREE.Mesh(petalGeo, new THREE.MeshStandardMaterial({ color: petalColors[i], roughness: 0.7 }));
+    m.rotation.x = -Math.PI / 2; // 모양의 y 방향 → 월드 -z (그룹 안에서)
+    m.position.set(0, 0, -1.5);
+    g.add(m);
+    // 꽃잎 가운데 잎맥
+    const vein = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.1, 15), new THREE.MeshBasicMaterial({ color: 0xc9ffe2, transparent: true, opacity: 0.5 }));
+    vein.position.set(0, TOP + 0.02, -10);
+    g.add(vein);
+    scene.add(g);
+  }
+  const onPetal = (i, r, lift = 0.3) => dirOf(i).multiplyScalar(r).add(new THREE.Vector3(0, TOP + lift, 0));
+  const between = (i, r, lift = 0.3) => {
+    const a = petalAngle(i) + Math.PI / PETALS;
+    return new THREE.Vector3(-Math.sin(a) * r, TOP + lift, -Math.cos(a) * r);
+  };
+
+  // 꽃잎별 장식
+  // 1 산호 정원
+  {
+    const cols = [0xff8a8a, 0xffb36b, 0xd36bff, 0xff6bb5];
+    for (let k = 0; k < 14; k++) {
+      const r = 8 + Math.random() * 8, off = (Math.random() - 0.5) * 6;
+      const p = onPetal(1, r, 0).add(new THREE.Vector3().crossVectors(dirOf(1), new THREE.Vector3(0, 1, 0)).multiplyScalar(off));
+      if (Math.abs(off) < 1.3) continue;
+      const h = 1.2 + Math.random() * 2;
+      const m = new THREE.Mesh(new THREE.ConeGeometry(0.35, h, 5), new THREE.MeshStandardMaterial({ color: cols[k % 4], roughness: 0.6, emissive: cols[k % 4], emissiveIntensity: 0.15 }));
+      m.position.copy(p).add(new THREE.Vector3(0, h / 2, 0));
+      scene.add(m);
+    }
+  }
+  // 2 노래하는 조개
+  const shellMat = new THREE.MeshStandardMaterial({ color: 0xffe8f0, roughness: 0.35, metalness: 0.2 });
+  for (let k = 0; k < 7; k++) {
+    const side = k % 2 ? 1 : -1;
+    const p = onPetal(2, 7.5 + k * 1.5, 0).add(new THREE.Vector3().crossVectors(dirOf(2), new THREE.Vector3(0, 1, 0)).multiplyScalar(side * 2.4));
+    const s = new THREE.Mesh(new THREE.SphereGeometry(0.8, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), shellMat);
+    s.scale.set(1, 0.6, 1.2); s.position.copy(p);
+    scene.add(s);
+  }
+  // 3 해파리 숲 (떠다니는 등불)
+  const jellies = [];
+  for (let k = 0; k < 10; k++) {
+    const off = (Math.random() - 0.5) * 7;
+    if (Math.abs(off) < 1.2) continue;
+    const p = onPetal(3, 7 + Math.random() * 10, 2.5 + Math.random() * 2).add(new THREE.Vector3().crossVectors(dirOf(3), new THREE.Vector3(0, 1, 0)).multiplyScalar(off));
+    const j = new THREE.Mesh(new THREE.SphereGeometry(0.7, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xa9f0ff, transparent: true, opacity: 0.7 }));
+    j.position.copy(p);
+    scene.add(j); jellies.push({ m: j, y: p.y, ph: k });
+  }
+  // 4 가시 산호 성벽
+  {
+    const wm = new THREE.MeshStandardMaterial({ color: 0x8a2d43, roughness: 0.7, flatShading: true });
+    for (let k = -6; k <= 6; k++) {
+      if (Math.abs(k) < 1) continue; // 문
+      const p = onPetal(4, 8, 0).add(new THREE.Vector3().crossVectors(dirOf(4), new THREE.Vector3(0, 1, 0)).multiplyScalar(k * 0.7));
+      const h = 2.5 + Math.random() * 1.5;
+      const m = new THREE.Mesh(new THREE.ConeGeometry(0.4, h, 5), wm);
+      m.position.copy(p).add(new THREE.Vector3(0, h / 2, 0));
+      scene.add(m);
+    }
+  }
+
+  // 꽃술 무대 (가운데)
+  const stageTop = 3.2;
+  const pistil = new THREE.Mesh(new THREE.CylinderGeometry(5.2, 5.8, stageTop + 0.6, 40), new THREE.MeshStandardMaterial({ color: 0xffd36b, roughness: 0.5 }));
+  pistil.position.y = (stageTop - 0.6) / 2;
+  scene.add(pistil);
+  // 금성의 오각별
+  {
+    const pts = [];
+    for (let k = 0; k <= 5; k++) {
+      const a = (k * 2) * (Math.PI * 2 / 5) - Math.PI / 2;
+      pts.push(new THREE.Vector3(Math.cos(a) * 4, stageTop + 0.03, Math.sin(a) * 4));
+    }
+    scene.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color: 0xfff6d8 })));
+    const ring = new THREE.Mesh(new THREE.RingGeometry(4.2, 4.4, 48), new THREE.MeshBasicMaterial({ color: 0xfff6d8, side: THREE.DoubleSide, transparent: true, opacity: 0.7 }));
+    ring.rotation.x = -Math.PI / 2; ring.position.y = stageTop + 0.03;
+    scene.add(ring);
+  }
+  // 수술 (가장자리)
+  const stamens = [];
+  for (let k = 0; k < 12; k++) {
+    const a = k / 12 * Math.PI * 2;
+    const h = 3.5 + (k % 3) * 0.8;
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.15, h, 6), new THREE.MeshStandardMaterial({ color: 0xfff1c0 }));
+    stem.position.set(Math.cos(a) * 5, stageTop + h / 2, Math.sin(a) * 5);
+    const tip = new THREE.Mesh(new THREE.SphereGeometry(0.4, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffb36b }));
+    tip.position.set(Math.cos(a) * 5, stageTop + h + 0.3, Math.sin(a) * 5);
+    scene.add(stem, tip); stamens.push({ m: tip, y: tip.position.y, ph: k });
+  }
+  const stageGlow = new THREE.PointLight(0xffd8a0, 1.0, 30);
+  stageGlow.position.set(0, stageTop + 6, 0);
+  scene.add(stageGlow);
+
+  // 수련 잎 다리 (꽃잎 사이)
+  const padMat = new THREE.MeshStandardMaterial({ color: 0x1f7a4c, roughness: 0.8 });
+  for (let i = 0; i < 4; i++) {
+    const p = between(i, 11.5, -0.4);
+    for (const o of [-1.4, 0, 1.4]) {
+      const a = petalAngle(i) + Math.PI / PETALS;
+      const t = new THREE.Vector3(Math.cos(a), 0, -Math.sin(a)).multiplyScalar(o);
+      const pad = new THREE.Mesh(new THREE.CylinderGeometry(1.3, 1.3, 0.25, 16, 1, false, 0.3, Math.PI * 2 - 0.6), padMat);
+      pad.position.copy(p).add(t);
+      scene.add(pad);
+    }
+  }
+
+  // 메인 길
+  const pts = [onPetal(0, 18), onPetal(0, 13), onPetal(0, 10.5)];
+  for (let i = 0; i < 4; i++) {
+    pts.push(between(i, 11.5, 0.1));
+    pts.push(onPetal(i + 1, 10.5), onPetal(i + 1, 14));
+    if (i < 3) pts.push(onPetal(i + 1, 10.5));
+  }
+  // 성벽 문 → 거품 다리 → 무대
+  pts.push(onPetal(4, 9), onPetal(4, 6.5, 1.8), new THREE.Vector3(0, stageTop + 0.3, 0).add(dirOf(4).multiplyScalar(3.5)));
+  const path = new THREE.CatmullRomCurve3(pts, false, "catmullrom", 0.35);
+  scene.add(new THREE.Mesh(new THREE.TubeGeometry(path, 400, 0.3, 6, false), new THREE.MeshBasicMaterial({ color: 0xe6fff3 })));
+  // 거품 다리 방울
+  {
+    const bm = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.55, roughness: 0.1 });
+    for (let k = 0; k < 6; k++) {
+      const p = onPetal(4, 8.5 - k * 0.9, 0.6 + k * 0.35);
+      const b = new THREE.Mesh(new THREE.SphereGeometry(0.6, 10, 8), bm);
+      b.position.copy(p).add(new THREE.Vector3(0.9, 0, 0.4));
+      scene.add(b);
+    }
+  }
+
+  // 도착: 예소드에서 올라오는 물기둥
+  const startP = onPetal(0, 18);
+  {
+    const col = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 2.2, 22, 16, 1, true), new THREE.MeshBasicMaterial({ color: 0x9ff3ff, transparent: true, opacity: 0.35, side: THREE.DoubleSide }));
+    col.position.copy(startP).add(dirOf(0).multiplyScalar(4)).add(new THREE.Vector3(0, -10, 0));
+    scene.add(col);
+  }
+
+  // 진주 동굴 (선택)
+  const pearlP = onPetal(2, 27, -1.2);
+  {
+    const isle = new THREE.Mesh(new THREE.SphereGeometry(4, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2), shellMat);
+    isle.scale.y = 0.5; isle.position.copy(pearlP);
+    scene.add(isle);
+    const pearl = new THREE.Mesh(new THREE.SphereGeometry(0.9, 16, 12), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1, metalness: 0.5, emissive: 0x334444 }));
+    pearl.position.copy(pearlP).add(new THREE.Vector3(0, 2.6, 0));
+    scene.add(pearl);
+    const from = onPetal(2, 19, 0.2);
+    const lp = [];
+    for (let k = 0; k <= 10; k++) lp.push(from.clone().lerp(pearlP.clone().add(new THREE.Vector3(0, 1.8, 0)), k / 10));
+    const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(lp), new THREE.LineDashedMaterial({ color: 0xe6fff3, dashSize: 0.9, gapSize: 0.6 }));
+    line.computeLineDistances();
+    scene.add(line);
+  }
+
+  // 섬 아래: 시든 검은 꽃과 까마귀 (아아브 자라크)
+  const dark = new THREE.Group();
+  for (let i = 0; i < PETALS; i++) {
+    const g = new THREE.Group();
+    g.rotation.y = petalAngle(i) + 0.3;
+    const m = new THREE.Mesh(petalGeo, new THREE.MeshStandardMaterial({ color: 0x3a1420, transparent: true, opacity: 0.5, emissive: 0x16040a }));
+    m.rotation.x = -Math.PI / 2 + 0.5; // 아래로 처짐
+    m.position.set(0, 0, -1.5);
+    m.scale.set(0.7, 0.7, 0.7);
+    g.add(m); dark.add(g);
+  }
+  dark.rotation.z = Math.PI;
+  dark.position.y = -26;
+  scene.add(dark);
+  const ravens = new THREE.Group();
+  ravens.position.y = -30;
+  for (let k = 0; k < 7; k++) {
+    const r = new THREE.Mesh(new THREE.ConeGeometry(0.5, 1.6, 4), new THREE.MeshBasicMaterial({ color: 0x1a0a10 }));
+    const a = k / 7 * Math.PI * 2;
+    r.position.set(Math.cos(a) * 9, Math.sin(k) * 1.5, Math.sin(a) * 9);
+    r.rotation.z = Math.PI / 2;
+    ravens.add(r);
+  }
+  scene.add(ravens);
+
+  // 전투 · 저장 표시
+  const fightMat = new THREE.MeshBasicMaterial({ color: 0xe0607a });
+  const saveMat = new THREE.MeshBasicMaterial({ color: 0x8fe3d0 });
+  const markers = [];
+  const mark = (p, mat, s) => { const m = new THREE.Mesh(new THREE.OctahedronGeometry(s), mat); m.position.copy(p); scene.add(m); markers.push({ m, y: p.y }); };
+  const up = (t, h = 1.5) => path.getPointAt(t).add(new THREE.Vector3(0, h, 0));
+  [0.05, 0.11, 0.2, 0.27, 0.33, 0.45, 0.52, 0.64, 0.7, 0.76].forEach(t => mark(up(t), fightMat, 0.45));
+  mark(up(0.9), fightMat, 0.75); // 엘리트
+  mark(pearlP.clone().add(new THREE.Vector3(1.6, 2.4, -1)), fightMat, 0.45);
+  mark(pearlP.clone().add(new THREE.Vector3(-1.6, 2.2, 1)), fightMat, 0.45);
+  mark(up(0.0, 1.8), saveMat, 0.6);
+  mark(up(0.42, 1.8), saveMat, 0.6);
+  mark(up(0.93, 1.8), saveMat, 0.6);
+
+  // 라벨
+  const labels = [];
+  const label = (html, pos, cls) => {
+    const el = document.createElement("div");
+    el.className = "tag" + (cls ? " " + cls : "");
+    el.innerHTML = html; labelsEl.appendChild(el); labels.push({ el, pos });
+  };
+  label('<span class="n">1</span>거품 해변', onPetal(0, 15, 3));
+  label('<span class="n">2</span>산호 정원', onPetal(1, 15, 4));
+  label('<span class="n">3</span>노래하는 조개 골짜기', onPetal(2, 15, 3));
+  label('<span class="n">+</span>진주 동굴 (선택)', pearlP.clone().add(new THREE.Vector3(0, 5, 0)), "opt");
+  label('<span class="n">4</span>해파리 숲', onPetal(3, 15, 6));
+  label('<span class="n">5</span>가시 산호 성벽', onPetal(4, 11, 5));
+  label('<span class="n">6</span>꽃술 무대', new THREE.Vector3(0, stageTop + 7, 0), "boss");
+  label('예소드에서 오는 물기둥', startP.clone().add(dirOf(0).multiplyScalar(4)).add(new THREE.Vector3(0, -12, 0)));
+  label('섬 아래: 시든 꽃과 까마귀 (아아브 자라크)', new THREE.Vector3(0, -34, 0), "dark");
+
+  // 카메라
+  const view = { theta: 0.5, phi: 0.95, radius: 80, target: new THREE.Vector3(0, 2, 0) };
+  let goal = null;
+  const V = {
+    top:   { theta: 0.0, phi: 0.12, radius: 84, target: new THREE.Vector3(0, 0, 0) },
+    angle: { theta: 0.5, phi: 0.95, radius: 80, target: new THREE.Vector3(0, 2, 0) },
+    stage: { theta: 0.9, phi: 1.05, radius: 26, target: new THREE.Vector3(0, 4, 0) },
+    under: { theta: 0.4, phi: 1.95, radius: 58, target: new THREE.Vector3(0, -14, 0) },
+  };
+  function setGoal(g) { if (reduceMotion) { Object.assign(view, { theta: g.theta, phi: g.phi, radius: g.radius }); view.target.copy(g.target); } else goal = g; }
+  document.getElementById("vTop").onclick = () => setGoal(V.top);
+  document.getElementById("vAngle").onclick = () => setGoal(V.angle);
+  document.getElementById("vStage").onclick = () => setGoal(V.stage);
+  document.getElementById("vUnder").onclick = () => setGoal(V.under);
+  const tLabels = document.getElementById("tLabels");
+  const hint = stage.querySelector(".hint");
+  tLabels.onclick = () => {
+    const on = labelsEl.hidden;
+    labelsEl.hidden = !on; hint.hidden = !on;
+    tLabels.setAttribute("aria-pressed", String(on));
+    tLabels.textContent = on ? "글자 표시" : "글자 숨김";
+  };
+  const zoom = f => { goal = null; view.radius = Math.min(150, Math.max(12, view.radius * f)); };
+  document.getElementById("zIn").onclick = () => zoom(0.85);
+  document.getElementById("zOut").onclick = () => zoom(1.18);
+  let drag = false, lx = 0, ly = 0;
+  canvas.addEventListener("pointerdown", e => { drag = true; lx = e.clientX; ly = e.clientY; canvas.setPointerCapture(e.pointerId); goal = null; });
+  canvas.addEventListener("pointermove", e => {
+    if (!drag) return;
+    view.theta -= (e.clientX - lx) * 0.006;
+    view.phi = Math.min(2.4, Math.max(0.08, view.phi - (e.clientY - ly) * 0.006));
+    lx = e.clientX; ly = e.clientY;
+  });
+  canvas.addEventListener("pointerup", () => { drag = false; });
+  canvas.addEventListener("wheel", e => { e.preventDefault(); zoom(e.deltaY > 0 ? 1.08 : 0.92); }, { passive: false });
+
+  function resize() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+  }
+  addEventListener("resize", resize); resize();
+
+  const tmp = new THREE.Vector3(), clock = new THREE.Clock();
+  function frame() {
+    const t = clock.getElapsedTime();
+    if (goal) {
+      const k = 0.08;
+      view.theta += (goal.theta - view.theta) * k; view.phi += (goal.phi - view.phi) * k;
+      view.radius += (goal.radius - view.radius) * k; view.target.lerp(goal.target, k);
+      if (Math.abs(goal.radius - view.radius) < 0.05 && Math.abs(goal.phi - view.phi) < 0.002) goal = null;
+    }
+    const { theta, phi, radius, target } = view;
+    camera.position.set(target.x + radius * Math.sin(phi) * Math.sin(theta), target.y + radius * Math.cos(phi), target.z + radius * Math.sin(phi) * Math.cos(theta));
+    camera.lookAt(target);
+    if (!reduceMotion) {
+      jellies.forEach(j => { j.m.position.y = j.y + Math.sin(t * 1.1 + j.ph) * 0.5; });
+      stamens.forEach(s => { s.m.position.y = s.y + Math.sin(t * 1.6 + s.ph) * 0.12; });
+      foam.forEach(f => { f.m.position.y = SEA_Y + 0.1 + Math.sin(t * 1.3 + f.ph) * 0.12; });
+      ravens.rotation.y = t * 0.3;
+      markers.forEach((k, i) => { k.m.position.y = k.y + Math.sin(t * 2 + i) * 0.15; k.m.rotation.y = t; });
+    }
+    renderer.render(scene, camera);
+    const w = stage.clientWidth, h = stage.clientHeight;
+    labels.forEach(l => {
+      tmp.copy(l.pos).project(camera);
+      l.el.hidden = tmp.z > 1;
+      l.el.style.left = ((tmp.x + 1) / 2 * w) + "px";
+      l.el.style.top = ((1 - tmp.y) / 2 * h) + "px";
+    });
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+</script>
+
+</html>
