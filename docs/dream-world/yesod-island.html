@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>예소드 섬 설계도</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* Layout: 3D 섬 미리보기(왼쪽) + 구역 목록(오른쪽), 좁으면 위아래로 */
+:root {
+  --night: #0d0f1f;
+  --night-2: #161a33;
+  --ink: #e7e4f5;
+  --ink-dim: #a29fbd;
+  --moon: #c9b8f2;
+  --line: #2c3156;
+  --fight: #e0607a;
+  --save: #8fe3d0;
+  --display: "Gowun Batang", "Nanum Myeongjo", serif;
+  --body: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  color-scheme: dark;
+}
+body {
+  background: radial-gradient(1200px 700px at 30% -10%, #23224a 0%, var(--night) 60%) fixed, var(--night);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.wrap {
+  max-width: 1180px; margin: 0 auto;
+  padding-block: 28px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 20px;
+}
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(26px, 4vw, 38px); margin: 0; text-wrap: balance; }
+header p { margin: 6px 0 0; color: var(--ink-dim); max-width: 64ch; }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 20px; align-items: start; }
+@media (max-width: 880px) { .main { grid-template-columns: minmax(0, 1fr); } }
+.stage {
+  position: relative; height: min(72vh, 680px); min-height: 420px;
+  border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+  background: #090b18; touch-action: none;
+}
+.stage canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+.labels { position: absolute; inset: 0; pointer-events: none; }
+.tag {
+  position: absolute; transform: translate(-50%, -130%);
+  font-size: 12px; font-weight: 500; white-space: nowrap;
+  padding: 2px 9px; border-radius: 999px;
+  background: rgba(13, 15, 31, 0.78); border: 1px solid rgba(201, 184, 242, 0.35); color: var(--ink);
+}
+.tag .n { color: var(--moon); margin-right: 4px; font-weight: 700; }
+.tag.opt { border-style: dashed; }
+.tag.boss { border-color: var(--moon); color: #fff; }
+.tag.dark { color: #e7a9b7; border-color: rgba(176, 71, 94, 0.4); background: rgba(30, 10, 18, 0.75); }
+.controls { position: absolute; left: 12px; bottom: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+.controls button {
+  font: inherit; font-size: 13px; color: var(--ink);
+  background: rgba(22, 26, 51, 0.9); border: 1px solid var(--line);
+  border-radius: 8px; padding: 6px 10px; cursor: pointer;
+}
+.controls button:hover { border-color: var(--moon); }
+.controls button:focus-visible { outline: 2px solid var(--moon); outline-offset: 2px; }
+.hint { position: absolute; right: 12px; top: 10px; font-size: 12px; color: var(--ink-dim); background: rgba(13, 15, 31, 0.6); padding: 3px 8px; border-radius: 6px; }
+aside { display: grid; gap: 14px; min-width: 0; }
+.panel { background: var(--night-2); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+.panel h3 { font-size: 12px; letter-spacing: 0.08em; color: var(--ink-dim); margin: 0 0 10px; font-weight: 700; }
+.zones { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.zones li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; }
+.zones .num {
+  width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 13px; font-weight: 700; color: var(--night); background: var(--moon);
+}
+.zones li.opt .num { background: transparent; color: var(--moon); border: 1px dashed var(--moon); }
+.zones b { font-weight: 700; }
+.zones .meta { font-size: 12px; color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+.zones p { margin: 2px 0 0; font-size: 14px; }
+.legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; font-size: 14px; }
+.legend li { display: flex; align-items: center; gap: 8px; }
+.mk { width: 12px; height: 12px; flex: none; }
+.mk.fight { background: var(--fight); transform: rotate(45deg) scale(0.8); }
+.mk.save { background: var(--save); border-radius: 50%; box-shadow: 0 0 8px var(--save); }
+.mk.path { height: 4px; background: #e9e1ff; border-radius: 2px; }
+.mk.dash { height: 0; border-top: 3px dashed #e9e1ff; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>예소드 섬 설계도</h1>
+    <p>1챕터 섬. 초승달 모양 땅이 둥근 달빛 호수를 감싸고, 길이 초승달을 따라 한 바퀴 돈 뒤 빛의 다리로 호수 한가운데 떠 있는 보스 제단으로 이어집니다. 드래그해서 돌려 보세요.</p>
+  </header>
+  <div class="main">
+    <div class="stage" id="stage">
+      <canvas id="c" aria-label="예소드 섬 3D 미리보기"></canvas>
+      <div class="labels" id="labels"></div>
+      <div class="hint">드래그: 회전 · 휠/버튼: 확대</div>
+      <div class="controls">
+        <button type="button" id="vTop">위에서</button>
+        <button type="button" id="vAngle">비스듬히</button>
+        <button type="button" id="vStart">도착 지점 시점</button>
+        <button type="button" id="vUnder">호수 아래</button>
+        <button type="button" id="tLabels" aria-pressed="true">글자 표시</button>
+        <button type="button" id="zIn" aria-label="확대">＋</button>
+        <button type="button" id="zOut" aria-label="축소">－</button>
+      </div>
+    </div>
+    <aside>
+      <div class="panel">
+        <h3>구역 순서 (길을 따라)</h3>
+        <ol class="zones">
+          <li><span class="num">1</span><div><b>달빛 호숫가</b> <span class="meta">Lv 1~2 · 전투 3</span><p>말쿠트에서 빛의 계단으로 도착하는 초승달 남쪽 끝. 그림자 병사·술사 복습, 잔상 첫 등장. 저장 지점.</p></div></li>
+          <li><span class="num">2</span><div><b>거울 숲</b> <span class="meta">Lv 2~3 · 전투 3</span><p>나무 대신 거울 기둥이 선 숲. 달빛 나방 첫 등장. 거울에 현실 방이 비치는 연출.</p></div></li>
+          <li class="opt"><span class="num">+</span><div><b>양 떼 언덕</b> <span class="meta">선택 · 전투 2~3</span><p>바깥으로 볼록 튀어나온 언덕. 꿈 양이 모여 있는 노가다·보물 구역. 되짚기로 다시 오는 곳.</p></div></li>
+          <li><span class="num">3</span><div><b>파수병의 문</b> <span class="meta">Lv 3~4 · 전투 3 + 엘리트</span><p>초승달 북쪽 끝의 큰 문. 달의 파수병이 지킨다. 문 앞 저장 지점.</p></div></li>
+          <li><span class="num">4</span><div><b>만월의 제단</b> <span class="meta">Lv 5 · 보스</span><p>문을 지나면 호수 위로 빛의 다리가 생기고, 한가운데 떠 있는 제단에서 만월의 거울과 싸운다.</p></div></li>
+        </ol>
+      </div>
+      <div class="panel">
+        <h3>표시</h3>
+        <ul class="legend">
+          <li><span class="mk path"></span>메인 길</li>
+          <li><span class="mk dash"></span>선택 길 (점선)</li>
+          <li><span class="mk fight"></span>전투가 있는 곳 (보이는 적)</li>
+          <li><span class="mk save"></span>저장·회복 지점</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>이 형태로 한 이유</h3>
+        <ul class="legend" style="gap:9px">
+          <li>섬 어디서든 호수 위 제단이 보여서, 목적지를 따로 안내하지 않아도 됨</li>
+          <li>길이 한 방향으로만 이어져서 길을 잃지 않음. 갈림길은 선택 구역 하나뿐</li>
+          <li>호수를 내려다보면 수면 아래 가마리엘 쪽 제단이 거꾸로 비침 (악몽 떡밥)</li>
+          <li>달 섬이라 땅 자체를 초승달 모양으로, 보스전 전에 "만월"이 완성되는 흐름</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+  const stage = document.getElementById("stage");
+  const canvas = document.getElementById("c");
+  const labelsEl = document.getElementById("labels");
+  if (!window.THREE) {
+    labelsEl.innerHTML = '<div style="position:absolute;inset:0;display:grid;place-items:center;color:#a29fbd">3D 미리보기를 불러오지 못했어요. 새로고침해 보세요.</div>';
+    return;
+  }
+  const reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+  const scene = new THREE.Scene();
+  const BG = 0x090b18;
+  scene.background = new THREE.Color(BG);
+  scene.fog = new THREE.FogExp2(BG, 0.008);
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 500);
+  scene.add(new THREE.HemisphereLight(0xc5bcff, 0x1a1030, 0.8));
+  const moonLight = new THREE.DirectionalLight(0xeae4ff, 0.85);
+  moonLight.position.set(-20, 40, 30);
+  scene.add(moonLight);
+
+  // 하늘의 달
+  const moon = new THREE.Mesh(new THREE.SphereGeometry(5, 32, 16), new THREE.MeshBasicMaterial({ color: 0xf1ecff, fog: false }));
+  moon.position.set(-60, 55, -90);
+  scene.add(moon);
+  // 별
+  {
+    const g = new THREE.BufferGeometry(), n = 700, p = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) {
+      const r = 150 + Math.random() * 50, t = Math.random() * Math.PI * 2, f = Math.random() * 1.2;
+      p[i*3] = r * Math.cos(t) * Math.cos(f); p[i*3+1] = r * Math.sin(f) + 10; p[i*3+2] = r * Math.sin(t) * Math.cos(f);
+    }
+    g.setAttribute("position", new THREE.BufferAttribute(p, 3));
+    scene.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0xdcd6ff, size: 0.5, fog: false })));
+  }
+
+  // 초승달 땅: 바깥 원(중심 0, 반지름 20) - 안쪽 원(중심 7, 반지름 15). 교점 (16, ±12)
+  const deg = d => d * Math.PI / 180;
+  const shape = new THREE.Shape();
+  shape.moveTo(16, 12);
+  shape.absarc(0, 0, 20, deg(36.87), deg(323.13), false);
+  shape.absarc(7, 0, 15, deg(-53.13), deg(53.13), true);
+  const ground = new THREE.Mesh(
+    new THREE.ExtrudeGeometry(shape, { depth: 2, bevelEnabled: true, bevelThickness: 0.4, bevelSize: 0.5, bevelSegments: 2, curveSegments: 48 }),
+    new THREE.MeshStandardMaterial({ color: 0x6f62a8, roughness: 0.85 })
+  );
+  ground.rotation.x = -Math.PI / 2; // XY 평면 → 바닥(XZ). shape의 y 가 -z 가 됨
+  ground.position.y = 0;
+  scene.add(ground);
+  const toWorld = (x, y, h = 2.4) => new THREE.Vector3(x, h, -y);
+
+  // 섬 아래 바위
+  const rockMat = new THREE.MeshStandardMaterial({ color: 0x2b2643, roughness: 1, flatShading: true });
+  const rock = new THREE.Mesh(new THREE.ConeGeometry(18, 22, 10), rockMat);
+  rock.rotation.x = Math.PI; rock.position.set(-3, -11, 0);
+  scene.add(rock);
+  const rock2 = new THREE.Mesh(new THREE.ConeGeometry(9, 12, 8), rockMat);
+  rock2.rotation.x = Math.PI; rock2.position.set(-12, -5, 6);
+  scene.add(rock2);
+
+  // 달빛 호수 (안쪽 원)
+  const lake = new THREE.Mesh(new THREE.CircleGeometry(14.6, 64),
+    new THREE.MeshStandardMaterial({ color: 0x4b4fae, transparent: true, opacity: 0.5, roughness: 0.1, metalness: 0.4, depthWrite: false, side: THREE.DoubleSide }));
+  lake.rotation.x = -Math.PI / 2; lake.position.set(7, 1.2, 0);
+  scene.add(lake);
+  const rim = new THREE.Mesh(new THREE.RingGeometry(14.3, 14.6, 64), new THREE.MeshBasicMaterial({ color: 0xbfb4ff, transparent: true, opacity: 0.4, side: THREE.DoubleSide }));
+  rim.rotation.x = -Math.PI / 2; rim.position.set(7, 1.25, 0);
+  scene.add(rim);
+
+  // 초승달 땅의 가운데 선 위 점 (원점에서 본 각도, 도)
+  function midAt(d) {
+    const a = deg(d), c = Math.cos(a);
+    const rIn = 7 * c + Math.sqrt(49 * c * c + 176); // 안쪽 원(호수)까지 거리
+    const r = (rIn + 20) / 2;
+    return [r * c, r * Math.sin(a)];
+  }
+  // 길: 남쪽 끝(-42도)에서 서쪽을 돌아 북쪽 끝(-318도)까지
+  const pathPts = [];
+  for (let d = -42; d >= -318; d -= 23) pathPts.push(toWorld(...midAt(d), 2.55));
+  pathPts.push(toWorld(...midAt(-318), 2.55));
+  const pathCurve = new THREE.CatmullRomCurve3(pathPts);
+  scene.add(new THREE.Mesh(new THREE.TubeGeometry(pathCurve, 120, 0.35, 6, false), new THREE.MeshBasicMaterial({ color: 0xe9e1ff })));
+
+  // 선택 길 → 양 떼 언덕 (바깥으로)
+  const hillPos = toWorld(-27, 0, 2.4);
+  const branchStart = toWorld(...midAt(180), 2.55);
+  {
+    const pts = [];
+    for (let i = 0; i <= 10; i++) pts.push(branchStart.clone().lerp(hillPos.clone().add(new THREE.Vector3(0, 1.2, 0)), i / 10));
+    const g = new THREE.BufferGeometry().setFromPoints(pts);
+    const line = new THREE.Line(g, new THREE.LineDashedMaterial({ color: 0xe9e1ff, dashSize: 0.9, gapSize: 0.6 }));
+    line.computeLineDistances();
+    scene.add(line);
+  }
+  // 언덕 (작은 섬)
+  const hill = new THREE.Mesh(new THREE.SphereGeometry(5.5, 20, 12, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x8a7cc4, roughness: 0.9 }));
+  hill.scale.y = 0.45; hill.position.copy(hillPos).add(new THREE.Vector3(0, -0.4, 0));
+  scene.add(hill);
+  const hillRock = new THREE.Mesh(new THREE.ConeGeometry(5.5, 8, 8), rockMat);
+  hillRock.rotation.x = Math.PI; hillRock.position.copy(hillPos).add(new THREE.Vector3(0, -4.4, 0));
+  scene.add(hillRock);
+  // 양들
+  for (let i = 0; i < 6; i++) {
+    const a = i * 1.1, r = 2 + (i % 3);
+    const sheep = new THREE.Mesh(new THREE.SphereGeometry(0.55, 10, 8), new THREE.MeshStandardMaterial({ color: 0xf4efff }));
+    sheep.position.copy(hillPos).add(new THREE.Vector3(Math.cos(a) * r, 1.6 - r * 0.15, Math.sin(a) * r));
+    scene.add(sheep);
+  }
+
+  // 거울 숲: 거울 기둥
+  const mirrorMat = new THREE.MeshStandardMaterial({ color: 0xd8d4f5, metalness: 0.9, roughness: 0.12 });
+  const forestCenter = midAt(-112);
+  for (let i = 0; i < 40; i++) {
+    const d = -95 - Math.random() * 40;           // 숲이 차지하는 각도 범위
+    const a = deg(d), c = Math.cos(a);
+    const rIn = 7 * c + Math.sqrt(49 * c * c + 176);
+    const mid = (rIn + 20) / 2;
+    const r = rIn + 0.8 + Math.random() * (19.2 - rIn);
+    if (Math.abs(r - mid) < 1.4) continue;       // 길 비우기
+    const x = r * c, y = r * Math.sin(a);
+    const h = 3 + Math.random() * 3;
+    const m = new THREE.Mesh(new THREE.BoxGeometry(0.8, h, 0.15), mirrorMat);
+    m.position.copy(toWorld(x, y, 2.4 + h / 2));
+    m.rotation.y = Math.random() * Math.PI;
+    scene.add(m);
+  }
+
+  // 도착 지점: 아래(말쿠트)에서 올라오는 빛의 계단
+  const startP = toWorld(...midAt(-40), 2.4);
+  const outDir = new THREE.Vector3(Math.cos(deg(-40)), 0, -Math.sin(deg(-40))); // 섬 바깥쪽
+  for (let i = 0; i < 9; i++) {
+    const s = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.25, 1.2), new THREE.MeshBasicMaterial({ color: 0xd9ccff, transparent: true, opacity: 0.9 - i * 0.08 }));
+    s.position.copy(startP).addScaledVector(outDir, 3 + i * 1.3).add(new THREE.Vector3(0, -0.6 - i * 1.1, 0));
+    s.lookAt(s.position.clone().add(outDir));
+    scene.add(s);
+  }
+
+  // 파수병의 문 (북쪽 끝)
+  const gateP = toWorld(...midAt(-318), 2.4);
+  {
+    const gm = new THREE.MeshStandardMaterial({ color: 0x9b8fd6, roughness: 0.6 });
+    const g = new THREE.Group();
+    const l = new THREE.Mesh(new THREE.BoxGeometry(0.9, 6, 0.9), gm); l.position.set(-2, 3, 0);
+    const r = l.clone(); r.position.x = 2;
+    const top = new THREE.Mesh(new THREE.TorusGeometry(2, 0.45, 8, 20, Math.PI), gm); top.position.y = 6;
+    g.add(l, r, top);
+    g.position.copy(gateP);
+    g.lookAt(new THREE.Vector3(7, gateP.y, 0));
+    scene.add(g);
+  }
+
+  // 만월의 제단: 호수 위에 떠 있음
+  const altarP = new THREE.Vector3(7, 7, 0);
+  const altarMat = new THREE.MeshStandardMaterial({ color: 0xcfc4ff, roughness: 0.4, emissive: 0x6b55c9, emissiveIntensity: 0.35 });
+  const altar = new THREE.Group();
+  const disc = new THREE.Mesh(new THREE.CylinderGeometry(4.5, 3.8, 0.8, 32), altarMat);
+  const under = new THREE.Mesh(new THREE.ConeGeometry(3.8, 5, 16), new THREE.MeshStandardMaterial({ color: 0x3b3466, roughness: 0.9 }));
+  under.rotation.x = Math.PI; under.position.y = -2.9;
+  const fullMoon = new THREE.Mesh(new THREE.TorusGeometry(2.6, 0.3, 12, 40), new THREE.MeshBasicMaterial({ color: 0xf6f0ff }));
+  fullMoon.position.y = 4.2;
+  altar.add(disc, under, fullMoon);
+  altar.position.copy(altarP);
+  scene.add(altar);
+  // 빛의 다리 (문 → 제단)
+  {
+    const a = gateP.clone().add(new THREE.Vector3(0, 0.2, 0));
+    const b = altarP.clone().add(new THREE.Vector3(2.5, 0.4, -2.5));
+    const mid = a.clone().lerp(b, 0.5).add(new THREE.Vector3(0, 2.5, 0));
+    const curve = new THREE.QuadraticBezierCurve3(a, mid, b);
+    scene.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 40, 0.3, 6, false), new THREE.MeshBasicMaterial({ color: 0xf3edff, transparent: true, opacity: 0.8 })));
+  }
+  // 호수 아래 거꾸로 비친 제단 (가마리엘)
+  const dark = altar.clone();
+  dark.traverse(o => { if (o.isMesh) { o.material = o.material.clone(); o.material.color = new THREE.Color(0x7a2a3c); if (o.material.emissive) o.material.emissive = new THREE.Color(0x3a0814); o.material.transparent = true; o.material.opacity = 0.55; } });
+  dark.rotation.z = Math.PI;
+  dark.position.set(7, -5, 0);
+  scene.add(dark);
+
+  // 전투(빨간 마름모) · 저장(청록 구슬)
+  const fightMat = new THREE.MeshBasicMaterial({ color: 0xe0607a });
+  const saveMat = new THREE.MeshBasicMaterial({ color: 0x8fe3d0 });
+  const markers = [];
+  function addMarker(p, mat, size) {
+    const m = new THREE.Mesh(new THREE.OctahedronGeometry(size), mat);
+    m.position.copy(p);
+    scene.add(m); markers.push({ m, y: p.y });
+  }
+  [0.12, 0.2, 0.3, 0.38, 0.47, 0.56, 0.66, 0.75, 0.84].forEach(t => addMarker(pathCurve.getPointAt(t).add(new THREE.Vector3(0, 1.4, 0)), fightMat, 0.45));
+  addMarker(hillPos.clone().add(new THREE.Vector3(1.5, 2.6, -1.5)), fightMat, 0.45);
+  addMarker(hillPos.clone().add(new THREE.Vector3(-2, 2.4, 1.5)), fightMat, 0.45);
+  addMarker(pathCurve.getPointAt(0.02).add(new THREE.Vector3(0, 1.6, 0)), saveMat, 0.6);
+  addMarker(pathCurve.getPointAt(0.5).add(new THREE.Vector3(0, 1.6, 0)), saveMat, 0.6);
+  addMarker(pathCurve.getPointAt(0.95).add(new THREE.Vector3(0, 1.6, 0)), saveMat, 0.6);
+
+  // 라벨
+  const labels = [];
+  function label(html, pos, cls) {
+    const el = document.createElement("div");
+    el.className = "tag" + (cls ? " " + cls : "");
+    el.innerHTML = html;
+    labelsEl.appendChild(el);
+    labels.push({ el, pos });
+  }
+  label('<span class="n">1</span>달빛 호숫가', pathCurve.getPointAt(0.06).add(new THREE.Vector3(0, 3, 0)));
+  label('<span class="n">2</span>거울 숲', toWorld(...forestCenter, 8.5));
+  label('<span class="n">+</span>양 떼 언덕 (선택)', hillPos.clone().add(new THREE.Vector3(0, 4.5, 0)), "opt");
+  label('<span class="n">3</span>파수병의 문', gateP.clone().add(new THREE.Vector3(0, 8, 0)));
+  label('<span class="n">4</span>만월의 제단', altarP.clone().add(new THREE.Vector3(0, 6.5, 0)), "boss");
+  label('말쿠트에서 오는 계단', startP.clone().addScaledVector(outDir, 9).add(new THREE.Vector3(0, -5, 0)));
+  label('수면 아래: 가마리엘 쪽 제단', new THREE.Vector3(7, -9, 0), "dark");
+
+  // 카메라
+  const view = { theta: 0.9, phi: 0.95, radius: 78, target: new THREE.Vector3(0, 0, 0) };
+  let goal = null;
+  const V = {
+    top:   { theta: 0.0, phi: 0.12, radius: 78, target: new THREE.Vector3(0, 0, 0) },
+    angle: { theta: 0.9, phi: 0.95, radius: 78, target: new THREE.Vector3(0, 0, 0) },
+    start: { theta: 2.3, phi: 1.25, radius: 26, target: new THREE.Vector3(10, 4, 8) },
+    under: { theta: 0.6, phi: 1.95, radius: 48, target: new THREE.Vector3(5, -3, 0) },
+  };
+  function setGoal(g) { if (reduceMotion) { Object.assign(view, { theta: g.theta, phi: g.phi, radius: g.radius }); view.target.copy(g.target); } else goal = g; }
+  document.getElementById("vTop").onclick = () => setGoal(V.top);
+  document.getElementById("vAngle").onclick = () => setGoal(V.angle);
+  document.getElementById("vStart").onclick = () => setGoal(V.start);
+  document.getElementById("vUnder").onclick = () => setGoal(V.under);
+  const tLabels = document.getElementById("tLabels");
+  const hint = stage.querySelector(".hint");
+  tLabels.onclick = () => {
+    const on = labelsEl.hidden;
+    labelsEl.hidden = !on;
+    hint.hidden = !on;
+    tLabels.setAttribute("aria-pressed", String(on));
+    tLabels.textContent = on ? "글자 표시" : "글자 숨김";
+  };
+  const zoom = f => { goal = null; view.radius = Math.min(140, Math.max(14, view.radius * f)); };
+  document.getElementById("zIn").onclick = () => zoom(0.85);
+  document.getElementById("zOut").onclick = () => zoom(1.18);
+  let drag = false, lx = 0, ly = 0;
+  canvas.addEventListener("pointerdown", e => { drag = true; lx = e.clientX; ly = e.clientY; canvas.setPointerCapture(e.pointerId); goal = null; });
+  canvas.addEventListener("pointermove", e => {
+    if (!drag) return;
+    view.theta -= (e.clientX - lx) * 0.006;
+    view.phi = Math.min(2.4, Math.max(0.08, view.phi - (e.clientY - ly) * 0.006));
+    lx = e.clientX; ly = e.clientY;
+  });
+  canvas.addEventListener("pointerup", () => { drag = false; });
+  canvas.addEventListener("wheel", e => { e.preventDefault(); zoom(e.deltaY > 0 ? 1.08 : 0.92); }, { passive: false });
+
+  function resize() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+  }
+  addEventListener("resize", resize); resize();
+
+  const tmp = new THREE.Vector3(), clock = new THREE.Clock();
+  function frame() {
+    const t = clock.getElapsedTime();
+    if (goal) {
+      const k = 0.08;
+      view.theta += (goal.theta - view.theta) * k; view.phi += (goal.phi - view.phi) * k;
+      view.radius += (goal.radius - view.radius) * k; view.target.lerp(goal.target, k);
+      if (Math.abs(goal.radius - view.radius) < 0.05 && Math.abs(goal.phi - view.phi) < 0.002) goal = null;
+    }
+    const { theta, phi, radius, target } = view;
+    camera.position.set(target.x + radius * Math.sin(phi) * Math.sin(theta), target.y + radius * Math.cos(phi), target.z + radius * Math.sin(phi) * Math.cos(theta));
+    camera.lookAt(target);
+    if (!reduceMotion) {
+      altar.position.y = altarP.y + Math.sin(t * 0.9) * 0.35;
+      fullMoon.rotation.y = t * 0.4;
+      markers.forEach((k, i) => { k.m.position.y = k.y + Math.sin(t * 2 + i) * 0.15; k.m.rotation.y = t; });
+    }
+    renderer.render(scene, camera);
+    const w = stage.clientWidth, h = stage.clientHeight;
+    labels.forEach(l => {
+      tmp.copy(l.pos).project(camera);
+      l.el.hidden = tmp.z > 1;
+      l.el.style.left = ((tmp.x + 1) / 2 * w) + "px";
+      l.el.style.top = ((1 - tmp.y) / 2 * h) + "px";
+    });
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+</script>
+
+</html>

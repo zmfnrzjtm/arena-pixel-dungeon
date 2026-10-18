@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>꿈의 나무 지도</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* Layout: 밤하늘 위에 3D 나무 미리보기(왼쪽) + 설명 패널(오른쪽), 좁으면 위아래로 */
+:root {
+  --night: #0d0f1f;
+  --night-2: #161a33;
+  --ink: #e7e4f5;
+  --ink-dim: #a29fbd;
+  --moon: #c9b8f2;
+  --line: #2c3156;
+  --nightmare: #b0475e;
+  --display: "Gowun Batang", "Nanum Myeongjo", serif;
+  --body: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  color-scheme: dark;
+}
+html, body { height: auto; }
+body {
+  background: radial-gradient(1200px 700px at 30% -10%, #23224a 0%, var(--night) 60%) fixed, var(--night);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding-block: 28px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid;
+  gap: 20px;
+}
+header h1 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(26px, 4vw, 38px);
+  margin: 0;
+  letter-spacing: 0.02em;
+  text-wrap: balance;
+}
+header p { margin: 6px 0 0; color: var(--ink-dim); max-width: 62ch; }
+.main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 860px) { .main { grid-template-columns: minmax(0, 1fr); } }
+
+.stage {
+  position: relative;
+  height: min(72vh, 680px);
+  min-height: 420px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #090b18;
+  touch-action: none;
+}
+.stage canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+.stage canvas:active { cursor: grabbing; }
+.labels { position: absolute; inset: 0; pointer-events: none; }
+.tag {
+  position: absolute;
+  transform: translate(-50%, -140%);
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(13, 15, 31, 0.72);
+  border: 1px solid rgba(201, 184, 242, 0.25);
+  color: var(--ink);
+}
+.tag.locked { color: var(--ink-dim); border-color: rgba(162, 159, 189, 0.18); }
+.tag.now { border-color: var(--moon); color: #fff; }
+.tag.dark { color: #e7a9b7; border-color: rgba(176, 71, 94, 0.35); background: rgba(30, 10, 18, 0.7); }
+.tag.reality { border-color: rgba(214, 196, 120, 0.5); }
+
+.controls {
+  position: absolute;
+  left: 12px; bottom: 12px;
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.controls button {
+  font: inherit; font-size: 13px;
+  color: var(--ink);
+  background: rgba(22, 26, 51, 0.88);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+.controls button:hover { border-color: var(--moon); }
+.controls button:focus-visible { outline: 2px solid var(--moon); outline-offset: 2px; }
+.controls button[aria-pressed="true"] { border-color: var(--moon); color: #fff; }
+.hint {
+  position: absolute; right: 12px; top: 10px;
+  font-size: 12px; color: var(--ink-dim);
+  background: rgba(13, 15, 31, 0.6); padding: 3px 8px; border-radius: 6px;
+}
+
+aside { display: grid; gap: 14px; min-width: 0; }
+.panel {
+  background: var(--night-2);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px 18px;
+}
+.panel h2 {
+  font-family: var(--display);
+  font-size: 22px; margin: 0;
+}
+.panel .sub { color: var(--ink-dim); font-size: 13px; margin-top: 2px; }
+.panel h3 {
+  font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--ink-dim); margin: 0 0 8px; font-weight: 700;
+}
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 8px; }
+.chip {
+  font-size: 12px; padding: 2px 9px; border-radius: 999px;
+  border: 1px solid var(--line); color: var(--ink);
+}
+.swatch { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+.panel p { margin: 6px 0 0; }
+.legend { list-style: none; padding: 0; margin: 0; display: grid; gap: 7px; font-size: 14px; }
+.legend li { display: flex; align-items: center; gap: 8px; }
+.dot { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+.how { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 14px; }
+.how b { color: #fff; font-weight: 500; }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>꿈의 나무 지도</h1>
+    <p>세계 전체를 세로로 쌓인 떠 있는 섬들로 만든 모습이에요. 맨 아래 말쿠트(현실)에서 출발해 위로 갈수록 깊은 꿈이고, 수면 아래에는 악몽(클리포트)이 거꾸로 비칩니다. 드래그해서 돌려 보고, 섬을 눌러 보세요.</p>
+  </header>
+
+  <div class="main">
+    <div class="stage" id="stage">
+      <canvas id="c" aria-label="3D 꿈의 나무 미리보기"></canvas>
+      <div class="labels" id="labels"></div>
+      <div class="hint">드래그: 회전 · 휠/버튼: 확대</div>
+      <div class="controls">
+        <button id="vFront" type="button">정면</button>
+        <button id="vSide" type="button">비스듬히</button>
+        <button id="vYesod" type="button">예소드 가까이</button>
+        <button id="vBelow" type="button">수면 아래</button>
+        <button id="tReflect" type="button" aria-pressed="true">악몽 반사</button>
+        <button id="zIn" type="button" aria-label="확대">＋</button>
+        <button id="zOut" type="button" aria-label="축소">－</button>
+      </div>
+    </div>
+
+    <aside>
+      <div class="panel" id="info" aria-live="polite">
+        <h2 id="iName">예소드</h2>
+        <div class="sub" id="iSub">Yesod · 기초</div>
+        <div class="chips" id="iChips"></div>
+        <p id="iDesc"></p>
+      </div>
+
+      <div class="panel">
+        <h3>섬 상태</h3>
+        <ul class="legend">
+          <li><span class="dot" style="background:#c9b8f2;box-shadow:0 0 8px #c9b8f2"></span>지금 갈 곳 (빛나는 고리)</li>
+          <li><span class="dot" style="background:#d6c478"></span>깬 곳 / 현실 (선명한 색)</li>
+          <li><span class="dot" style="background:#4a4c66"></span>아직 못 간 곳 (안개, 흐릿함)</li>
+          <li><span class="dot" style="background:#b0475e"></span>수면 아래 악몽 (거꾸로 비침)</li>
+        </ul>
+      </div>
+
+      <div class="panel">
+        <h3>로블록스에서 만드는 법</h3>
+        <ol class="how">
+          <li><b>섬 하나 = 챕터 하나.</b> 평평한 윗면 + 아래로 뾰족한 바위로 섬을 만들고 그 세피라 색으로 꾸미기</li>
+          <li><b>섬 사이 길</b>은 빛나는 다리나 계단. 아직 못 가는 길은 흐리게 두기</li>
+          <li><b>안 열린 섬</b>은 저용량 모형만 두고 안개(Atmosphere)로 가리기</li>
+          <li><b>수면</b>은 반투명 파트, 그 아래에 클리포트 섬을 <b>뒤집어서</b> 어둡게 배치</li>
+          <li>챕터 안은 걸어 다니고, <b>챕터 사이 이동은 지도 화면에서 선택 → 텔레포트</b></li>
+        </ol>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+  const S = 2.4; // 나무 간격
+  const SEPH = [
+    { id: "Kether",   ko: "케테르",   en: "Kether",   mean: "왕관",       x: 0,  y: 10,  color: 0xf4f2ff, depth: "꿈의 최심부", state: "locked",
+      desc: "모든 꿈이 시작된 곳. 최종장. 가장 높이 떠 있는 빛나는 섬." },
+    { id: "Chokmah",  ko: "호크마",   en: "Chokmah",  mean: "지혜",       x: 2,  y: 9,   color: 0x9a9fb3, depth: "꿈 5층", state: "locked",
+      desc: "별이 쏟아지는 우주 같은 섬. 번뜩이는 영감의 세계." },
+    { id: "Binah",    ko: "비나",     en: "Binah",    mean: "이해",       x: -2, y: 9,   color: 0x3a3c55, depth: "꿈 5층", state: "locked",
+      desc: "시간이 멈춘 깊은 바다 같은 섬. 고요하고 무거운 세계." },
+    { id: "Daat",     ko: "다아트",   en: "Da'at",    mean: "지식",       x: 0,  y: 8,   color: 0xbfb3e6, depth: "경계 (심연)", state: "hidden",
+      desc: "보이지 않는 11번째 섬. 처음엔 숨겨 두었다가 나중에 드러나는 심연 위의 다리." },
+    { id: "Chesed",   ko: "헤세드",   en: "Chesed",   mean: "자비",       x: 2,  y: 6.5, color: 0x3f6fd8, depth: "꿈 4층", state: "locked",
+      desc: "용서와 구원의 꿈. 너무 편안해서 떠나기 싫어지는 섬." },
+    { id: "Geburah",  ko: "게부라",   en: "Geburah",  mean: "엄격",       x: -2, y: 6.5, color: 0xc8303a, depth: "꿈 4층", state: "locked",
+      desc: "시련과 심판의 꿈. 불로 정화해야 지나갈 수 있는 섬." },
+    { id: "Tiphareth",ko: "티페레트", en: "Tiphareth",mean: "아름다움",   x: 0,  y: 5.5, color: 0xe9b93a, depth: "꿈 3층", state: "locked",
+      desc: "나무의 한가운데. 또 다른 나를 마주하는 중간 클라이맥스." },
+    { id: "Netzach",  ko: "네차흐",   en: "Netzach",  mean: "승리",       x: 2,  y: 3.5, color: 0x2fae6a, depth: "꿈 2층", state: "locked",
+      desc: "색과 음악이 넘치는 감정의 꿈. 마음대로 풍경이 바뀌는 섬." },
+    { id: "Hod",      ko: "호드",     en: "Hod",      mean: "영광",       x: -2, y: 3.5, color: 0xe5852e, depth: "꿈 2층", state: "locked",
+      desc: "글자와 미로, 끝없는 도서관. 논리로 풀어야 하는 섬." },
+    { id: "Yesod",    ko: "예소드",   en: "Yesod",    mean: "기초",       x: 0,  y: 2.5, color: 0xa17fe0, depth: "꿈 1층 · 1챕터", state: "now",
+      desc: "달빛이 비치는 호수 섬. 현실과 꿈의 문턱이자 1챕터. 호수를 내려다보면 아래쪽 악몽이 거꾸로 비친다." },
+    { id: "Malkuth",  ko: "말쿠트",   en: "Malkuth",  mean: "왕국",       x: 0,  y: 1,   color: 0xb7a35a, depth: "현실 · 거점", state: "reality",
+      desc: "현실의 방과 마을. 모든 여정이 시작되고 돌아오는 거점. 여기서 지도를 열어 다음 섬으로 간다." },
+  ];
+  const QLI = [
+    { id: "Thaumiel",  ko: "타우미엘",     of: "Kether",    mean: "둘로 갈라진 근원" },
+    { id: "Ghagiel",   ko: "가기엘",       of: "Chokmah",   mean: "끊기는 영감" },
+    { id: "Satariel",  ko: "사타리엘",     of: "Binah",     mean: "가려진 진실" },
+    { id: "Choronzon", ko: "코론존",       of: "Daat",      mean: "정신이 흩어지는 심연" },
+    { id: "Gamchicoth",ko: "감키코트",     of: "Chesed",    mean: "탐욕" },
+    { id: "Golachab",  ko: "골라브",       of: "Geburah",   mean: "파괴" },
+    { id: "Thagirion", ko: "타기리론",     of: "Tiphareth", mean: "가짜 자아" },
+    { id: "AarabZaraq",ko: "아아브 자라크",of: "Netzach",   mean: "흩어진 감정" },
+    { id: "Samael",    ko: "사마엘",       of: "Hod",       mean: "거짓" },
+    { id: "Gamaliel",  ko: "가마리엘",     of: "Yesod",     mean: "붙잡아 두는 거짓 꿈" },
+    { id: "Nahemoth",  ko: "나헤모트",     of: "Malkuth",   mean: "뒤틀린 현실, 가위눌림" },
+  ];
+  const PATHS = [
+    ["Kether","Chokmah"],["Kether","Binah"],["Kether","Tiphareth"],["Chokmah","Binah"],["Chokmah","Chesed"],
+    ["Chokmah","Tiphareth"],["Binah","Geburah"],["Binah","Tiphareth"],["Chesed","Geburah"],["Chesed","Tiphareth"],
+    ["Chesed","Netzach"],["Geburah","Tiphareth"],["Geburah","Hod"],["Tiphareth","Netzach"],["Tiphareth","Hod"],
+    ["Tiphareth","Yesod"],["Netzach","Hod"],["Netzach","Yesod"],["Netzach","Malkuth"],["Hod","Yesod"],
+    ["Hod","Malkuth"],["Yesod","Malkuth"],
+  ];
+  const byId = {};
+  SEPH.forEach((s, i) => { s.z = (i % 2 ? 1 : -1) * 0.6; byId[s.id] = s; });
+
+  const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const stage = document.getElementById("stage");
+  const canvas = document.getElementById("c");
+  const labelsEl = document.getElementById("labels");
+
+  if (!window.THREE) {
+    labelsEl.innerHTML = '<div style="position:absolute;inset:0;display:grid;place-items:center;color:#a29fbd;padding:20px;text-align:center">3D 미리보기를 불러오지 못했어요. 새로고침해 보세요.</div>';
+    return;
+  }
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  const scene = new THREE.Scene();
+  const BG = 0x090b18;
+  scene.background = new THREE.Color(BG);
+  scene.fog = new THREE.FogExp2(BG, 0.011);
+  const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 400);
+
+  scene.add(new THREE.HemisphereLight(0xb9b2ff, 0x1a1030, 0.75));
+  const moon = new THREE.DirectionalLight(0xe6e0ff, 0.9);
+  moon.position.set(18, 40, 25);
+  scene.add(moon);
+
+  // 별
+  {
+    const g = new THREE.BufferGeometry();
+    const n = 900, pos = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) {
+      const r = 120 + Math.random() * 60, t = Math.random() * Math.PI * 2, p = Math.acos(Math.random() * 2 - 1);
+      pos[i*3] = r * Math.sin(p) * Math.cos(t);
+      pos[i*3+1] = Math.abs(r * Math.cos(p)) * 0.9 + 5;
+      pos[i*3+2] = r * Math.sin(p) * Math.sin(t);
+    }
+    g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+    scene.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0xdcd6ff, size: 0.45, fog: false })));
+  }
+
+  const grey = new THREE.Color(0x4a4c66);
+  const islands = [];       // { mesh(group), data, baseY, labelEl }
+  const reflectGroup = new THREE.Group();
+  scene.add(reflectGroup);
+
+  function makeIsland(colorHex, opts) {
+    const g = new THREE.Group();
+    const col = new THREE.Color(colorHex);
+    const topCol = opts.locked ? col.clone().lerp(grey, 0.7) : col;
+    const rockCol = (opts.dark ? new THREE.Color(0x2a1018) : new THREE.Color(0x2e2a44)).lerp(topCol, 0.15);
+    const transparent = opts.opacity < 1;
+    const topMat = new THREE.MeshStandardMaterial({ color: topCol, roughness: 0.7, transparent, opacity: opts.opacity,
+      emissive: opts.glow ? col : new THREE.Color(0x000000), emissiveIntensity: opts.glow ? 0.35 : 0 });
+    const rockMat = new THREE.MeshStandardMaterial({ color: rockCol, roughness: 0.95, flatShading: true, transparent, opacity: opts.opacity });
+    const r = opts.r || 1.5;
+    const top = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 0.92, 0.45, 9), topMat);
+    const rock = new THREE.Mesh(new THREE.ConeGeometry(r * 0.92, r * 1.9, 9), rockMat);
+    rock.rotation.x = Math.PI;
+    rock.position.y = -0.225 - r * 0.95;
+    g.add(top, rock);
+    // 작은 탑(특징물)
+    const spire = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.9, 6), topMat);
+    spire.position.set(r * 0.35, 0.67, -r * 0.2);
+    g.add(spire);
+    return g;
+  }
+
+  const P = s => new THREE.Vector3(s.x * S, s.y * S, s.z);
+
+  // 세피로트 섬
+  SEPH.forEach(s => {
+    const locked = s.state === "locked";
+    const hidden = s.state === "hidden";
+    const opacity = hidden ? 0.28 : locked ? 0.6 : 1;
+    const g = makeIsland(s.color, { locked: locked || hidden, opacity, glow: s.state === "now", r: s.id === "Malkuth" ? 1.9 : 1.5 });
+    g.position.copy(P(s));
+    g.userData = { kind: "seph", data: s };
+    scene.add(g);
+    const tag = document.createElement("div");
+    tag.className = "tag" + (locked || hidden ? " locked" : "") + (s.state === "now" ? " now" : "") + (s.state === "reality" ? " reality" : "");
+    tag.textContent = (locked ? "??? " : hidden ? "" : "") + (hidden ? "· · ·" : s.ko);
+    if (locked) tag.textContent = s.ko;
+    labelsEl.appendChild(tag);
+    islands.push({ mesh: g, data: s, baseY: g.position.y, labelEl: tag, labelOffset: 1.2 });
+  });
+
+  // 지금 갈 곳: 빛나는 고리
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(2.1, 0.06, 8, 48),
+    new THREE.MeshBasicMaterial({ color: 0xc9b8f2, transparent: true, opacity: 0.85 }));
+  ring.rotation.x = Math.PI / 2;
+  const yesod = islands.find(i => i.data.id === "Yesod");
+  ring.position.copy(yesod.mesh.position).add(new THREE.Vector3(0, 0.3, 0));
+  scene.add(ring);
+
+  // 길 (다리)
+  PATHS.forEach(([a, b]) => {
+    const A = P(byId[a]), B = P(byId[b]);
+    const open = (a === "Yesod" && b === "Malkuth");
+    const mid = A.clone().add(B).multiplyScalar(0.5);
+    const len = A.distanceTo(B) - 2.8;
+    if (len <= 0) return;
+    const geo = new THREE.CylinderGeometry(open ? 0.12 : 0.05, open ? 0.12 : 0.05, len, 6);
+    const mat = new THREE.MeshBasicMaterial({ color: open ? 0xd9ccff : 0x6b6a92, transparent: true, opacity: open ? 0.95 : 0.28 });
+    const m = new THREE.Mesh(geo, mat);
+    m.position.copy(mid);
+    m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), B.clone().sub(A).normalize());
+    scene.add(m);
+  });
+
+  // 수면
+  const water = new THREE.Mesh(new THREE.CircleGeometry(30, 48),
+    new THREE.MeshStandardMaterial({ color: 0x3b3f88, transparent: true, opacity: 0.42, roughness: 0.2, metalness: 0.3, depthWrite: false, side: THREE.DoubleSide }));
+  water.rotation.x = -Math.PI / 2;
+  water.position.y = 0;
+  scene.add(water);
+  const shore = new THREE.Mesh(new THREE.RingGeometry(29.6, 30, 64),
+    new THREE.MeshBasicMaterial({ color: 0x8d86d6, transparent: true, opacity: 0.35, side: THREE.DoubleSide }));
+  shore.rotation.x = -Math.PI / 2;
+  shore.position.y = 0.02;
+  scene.add(shore);
+
+  // 클리포트: 수면 아래 거꾸로
+  QLI.forEach(q => {
+    const s = byId[q.of];
+    const g = makeIsland(0xb0475e, { dark: true, locked: false, opacity: q.id === "Gamaliel" || q.id === "Nahemoth" ? 0.55 : 0.32, r: q.of === "Malkuth" ? 1.9 : 1.5 });
+    g.rotation.z = Math.PI;
+    g.position.set(s.x * S, -s.y * S, s.z);
+    g.userData = { kind: "qli", data: q };
+    reflectGroup.add(g);
+    const tag = document.createElement("div");
+    tag.className = "tag dark";
+    tag.textContent = q.ko;
+    labelsEl.appendChild(tag);
+    islands.push({ mesh: g, data: q, baseY: g.position.y, labelEl: tag, labelOffset: -1.4, reflect: true });
+  });
+  PATHS.forEach(([a, b]) => {
+    const A = P(byId[a]), B = P(byId[b]);
+    A.y = -A.y; B.y = -B.y;
+    const g = new THREE.BufferGeometry().setFromPoints([A, B]);
+    reflectGroup.add(new THREE.Line(g, new THREE.LineBasicMaterial({ color: 0x7a2a3c, transparent: true, opacity: 0.35 })));
+  });
+
+  // 카메라 궤도
+  const view = { theta: 0.35, phi: 1.32, radius: 62, target: new THREE.Vector3(0, 9, 0) };
+  let goal = null;
+  function applyCam() {
+    const { theta, phi, radius, target } = view;
+    camera.position.set(
+      target.x + radius * Math.sin(phi) * Math.sin(theta),
+      target.y + radius * Math.cos(phi),
+      target.z + radius * Math.sin(phi) * Math.cos(theta)
+    );
+    camera.lookAt(target);
+  }
+  function setGoal(g) { goal = g; if (reduceMotion) { Object.assign(view, { theta: g.theta, phi: g.phi, radius: g.radius }); view.target.copy(g.target); goal = null; } }
+  const VIEWS = {
+    front: { theta: 0.0, phi: 1.5, radius: 66, target: new THREE.Vector3(0, 6, 0) },
+    side:  { theta: 0.75, phi: 1.25, radius: 62, target: new THREE.Vector3(0, 9, 0) },
+    yesod: { theta: 0.45, phi: 1.12, radius: 20, target: new THREE.Vector3(0, 3.5, 0) },
+    below: { theta: 0.3, phi: 1.85, radius: 46, target: new THREE.Vector3(0, -6, 0) },
+  };
+
+  // 드래그 회전
+  let dragging = false, lx = 0, ly = 0, moved = 0;
+  canvas.addEventListener("pointerdown", e => { dragging = true; moved = 0; lx = e.clientX; ly = e.clientY; canvas.setPointerCapture(e.pointerId); goal = null; });
+  canvas.addEventListener("pointermove", e => {
+    if (!dragging) return;
+    const dx = e.clientX - lx, dy = e.clientY - ly; lx = e.clientX; ly = e.clientY;
+    moved += Math.abs(dx) + Math.abs(dy);
+    view.theta -= dx * 0.006;
+    view.phi = Math.min(2.6, Math.max(0.35, view.phi - dy * 0.006));
+  });
+  canvas.addEventListener("pointerup", e => { dragging = false; if (moved < 6) pick(e); });
+  canvas.addEventListener("wheel", e => { e.preventDefault(); goal = null; view.radius = Math.min(110, Math.max(12, view.radius * (e.deltaY > 0 ? 1.08 : 0.92))); }, { passive: false });
+  const zoom = f => { goal = null; view.radius = Math.min(110, Math.max(12, view.radius * f)); };
+  document.getElementById("zIn").onclick = () => zoom(0.85);
+  document.getElementById("zOut").onclick = () => zoom(1.18);
+  document.getElementById("vFront").onclick = () => setGoal(VIEWS.front);
+  document.getElementById("vSide").onclick = () => setGoal(VIEWS.side);
+  document.getElementById("vYesod").onclick = () => { setGoal(VIEWS.yesod); show(byId.Yesod); };
+  document.getElementById("vBelow").onclick = () => { setGoal(VIEWS.below); showQ(QLI.find(q => q.id === "Gamaliel")); };
+  const tBtn = document.getElementById("tReflect");
+  tBtn.onclick = () => {
+    reflectGroup.visible = !reflectGroup.visible;
+    tBtn.setAttribute("aria-pressed", String(reflectGroup.visible));
+  };
+
+  // 선택
+  const ray = new THREE.Raycaster();
+  function pick(e) {
+    const r = canvas.getBoundingClientRect();
+    const v = new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(v, camera);
+    const targets = islands.filter(i => !i.reflect || reflectGroup.visible).map(i => i.mesh);
+    const hit = ray.intersectObjects(targets, true)[0];
+    if (!hit) return;
+    let o = hit.object; while (o && !o.userData.kind) o = o.parent;
+    if (!o) return;
+    if (o.userData.kind === "seph") show(o.userData.data); else showQ(o.userData.data);
+  }
+
+  const iName = document.getElementById("iName"), iSub = document.getElementById("iSub"),
+        iChips = document.getElementById("iChips"), iDesc = document.getElementById("iDesc");
+  const STATE_KO = { now: "지금 갈 곳", reality: "현실 · 거점", locked: "아직 못 간 곳 (안개)", hidden: "숨겨진 곳" };
+  function hex(n) { return "#" + n.toString(16).padStart(6, "0"); }
+  function chip(text, color) { return `<span class="chip">${color ? `<span class="swatch" style="background:${color}"></span>` : ""}${text}</span>`; }
+  function show(s) {
+    iName.textContent = s.ko;
+    iSub.textContent = `${s.en} · ${s.mean}`;
+    iChips.innerHTML = chip(s.depth) + chip(STATE_KO[s.state], hex(s.color));
+    iDesc.textContent = s.desc;
+  }
+  function showQ(q) {
+    const s = byId[q.of];
+    iName.textContent = q.ko;
+    iSub.textContent = `${s.ko}의 그림자 · 수면 아래`;
+    iChips.innerHTML = chip("악몽") + chip("거꾸로 비친 섬", "#b0475e");
+    iDesc.textContent = `${s.ko} 섬이 뒤틀린 악몽 버전. ${q.mean}. 처음엔 물속에 흐릿하게만 보이고, 이야기가 진행되면 선명해진다.`;
+  }
+  show(byId.Yesod);
+
+  // 크기
+  function resize() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  window.addEventListener("resize", resize);
+  resize();
+
+  // 루프
+  const tmp = new THREE.Vector3();
+  const clock = new THREE.Clock();
+  function frame() {
+    const t = clock.getElapsedTime();
+    if (goal) {
+      const k = 0.08;
+      view.theta += (goal.theta - view.theta) * k;
+      view.phi += (goal.phi - view.phi) * k;
+      view.radius += (goal.radius - view.radius) * k;
+      view.target.lerp(goal.target, k);
+      if (Math.abs(goal.radius - view.radius) < 0.05 && Math.abs(goal.theta - view.theta) < 0.002) goal = null;
+    }
+    applyCam();
+    islands.forEach((i, n) => {
+      if (!reduceMotion) i.mesh.position.y = i.baseY + Math.sin(t * 0.8 + n) * (i.reflect ? 0.12 : 0.18);
+    });
+    if (!reduceMotion) {
+      const s = 1 + Math.sin(t * 2.2) * 0.06;
+      ring.scale.set(s, s, s);
+      ring.material.opacity = 0.6 + Math.sin(t * 2.2) * 0.25;
+    }
+    ring.position.y = yesod.mesh.position.y + 0.3;
+    renderer.render(scene, camera);
+
+    const w = stage.clientWidth, h = stage.clientHeight;
+    islands.forEach(i => {
+      if (i.reflect && !reflectGroup.visible) { i.labelEl.hidden = true; return; }
+      tmp.copy(i.mesh.position); tmp.y += i.labelOffset;
+      tmp.project(camera);
+      const behind = tmp.z > 1;
+      const dist = camera.position.distanceTo(i.mesh.position);
+      i.labelEl.hidden = behind;
+      i.labelEl.style.left = ((tmp.x + 1) / 2 * w) + "px";
+      i.labelEl.style.top = ((1 - tmp.y) / 2 * h) + "px";
+      i.labelEl.style.opacity = String(Math.max(0.25, Math.min(1, 70 / dist)) * (i.reflect ? 0.85 : 1));
+    });
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+</script>
+
+</html>
