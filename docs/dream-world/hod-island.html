@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="ko">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>호드 섬 설계도</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* Layout: 3D 섬 미리보기(왼쪽) + 구역 목록(오른쪽), 좁으면 위아래로 */
+:root {
+  --night: #120f1c;
+  --night-2: #1d1828;
+  --ink: #efe7dc;
+  --ink-dim: #b2a79a;
+  --hod: #e5852e;
+  --line: #3a3043;
+  --fight: #e0607a;
+  --save: #8fe3d0;
+  --display: "Gowun Batang", "Nanum Myeongjo", serif;
+  --body: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  color-scheme: dark;
+}
+body {
+  background: radial-gradient(1200px 700px at 30% -10%, #2e2236 0%, var(--night) 60%) fixed, var(--night);
+  color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.6;
+}
+.wrap {
+  max-width: 1180px; margin: 0 auto; padding-block: 28px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 20px;
+}
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(26px, 4vw, 38px); margin: 0; text-wrap: balance; }
+header p { margin: 6px 0 0; color: var(--ink-dim); max-width: 64ch; }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 20px; align-items: start; }
+@media (max-width: 880px) { .main { grid-template-columns: minmax(0, 1fr); } }
+.stage {
+  position: relative; height: min(72vh, 680px); min-height: 420px;
+  border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+  background: #0d0a14; touch-action: none;
+}
+.stage canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+.labels { position: absolute; inset: 0; pointer-events: none; }
+.tag {
+  position: absolute; transform: translate(-50%, -130%);
+  font-size: 12px; font-weight: 500; white-space: nowrap; padding: 2px 9px; border-radius: 999px;
+  background: rgba(18, 15, 28, 0.8); border: 1px solid rgba(229, 133, 46, 0.4); color: var(--ink);
+}
+.tag .n { color: var(--hod); margin-right: 4px; font-weight: 700; }
+.tag.opt { border-style: dashed; }
+.tag.boss { border-color: var(--hod); color: #fff; }
+.tag.dark { color: #e7a9b7; border-color: rgba(176, 71, 94, 0.4); background: rgba(30, 10, 18, 0.75); }
+.controls { position: absolute; left: 12px; bottom: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+.controls button {
+  font: inherit; font-size: 13px; color: var(--ink); background: rgba(29, 24, 40, 0.92);
+  border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; cursor: pointer;
+}
+.controls button:hover { border-color: var(--hod); }
+.controls button:focus-visible { outline: 2px solid var(--hod); outline-offset: 2px; }
+.hint { position: absolute; right: 12px; top: 10px; font-size: 12px; color: var(--ink-dim); background: rgba(18, 15, 28, 0.6); padding: 3px 8px; border-radius: 6px; }
+aside { display: grid; gap: 14px; min-width: 0; }
+.panel { background: var(--night-2); border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; }
+.panel h3 { font-size: 12px; letter-spacing: 0.08em; color: var(--ink-dim); margin: 0 0 10px; font-weight: 700; }
+.zones { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.zones li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; }
+.zones .num { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700; color: var(--night); background: var(--hod); }
+.zones li.opt .num { background: transparent; color: var(--hod); border: 1px dashed var(--hod); }
+.zones b { font-weight: 700; }
+.zones .meta { font-size: 12px; color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+.zones p { margin: 2px 0 0; font-size: 14px; }
+.legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 14px; }
+.legend li { display: flex; align-items: center; gap: 8px; }
+.mk { width: 12px; height: 12px; flex: none; }
+.mk.fight { background: var(--fight); transform: rotate(45deg) scale(0.8); }
+.mk.save { background: var(--save); border-radius: 50%; box-shadow: 0 0 8px var(--save); }
+.mk.path { height: 4px; background: #ffd9b0; border-radius: 2px; }
+.mk.dash { height: 0; border-top: 3px dashed #ffd9b0; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>호드 섬 설계도</h1>
+    <p>2챕터(이성의 길) 섬. 펼친 책 모양 땅 위로, 글을 읽듯 오른쪽 페이지를 지그재그로 올라가고, 위에서 책등을 건너 왼쪽 페이지를 내려온 뒤, 양쪽 페이지 사이 책등 길을 따라 나선 서고 탑으로 갑니다. 드래그해서 돌려 보세요.</p>
+  </header>
+  <div class="main">
+    <div class="stage" id="stage">
+      <canvas id="c" aria-label="호드 섬 3D 미리보기"></canvas>
+      <div class="labels" id="labels"></div>
+      <div class="hint">드래그: 회전 · 휠/버튼: 확대</div>
+      <div class="controls">
+        <button type="button" id="vTop">위에서</button>
+        <button type="button" id="vAngle">비스듬히</button>
+        <button type="button" id="vSpine">책등 길 시점</button>
+        <button type="button" id="vUnder">섬 아래</button>
+        <button type="button" id="tLabels" aria-pressed="true">글자 표시</button>
+        <button type="button" id="zIn" aria-label="확대">＋</button>
+        <button type="button" id="zOut" aria-label="축소">－</button>
+      </div>
+    </div>
+    <aside>
+      <div class="panel">
+        <h3>구역 순서 (길을 따라)</h3>
+        <ol class="zones">
+          <li><span class="num">1</span><div><b>책갈피 다리</b> <span class="meta">Lv 5 · 도착</span><p>예소드에서 이어진 주황 책갈피 끈을 타고 오른쪽 페이지 아래 모서리에 도착. 저장 지점.</p></div></li>
+          <li><span class="num">2</span><div><b>숫자의 정원</b> <span class="meta">Lv 5~6 · 전투 3</span><p>오른쪽 페이지. 숫자가 새겨진 기둥 줄 사이를 글 읽듯 지그재그로 올라감. 숫자 맞추기 퍼즐.</p></div></li>
+          <li><span class="num">3</span><div><b>넘김 다리</b> <span class="meta">저장</span><p>페이지 위쪽에서 책등을 건너는 아치 다리. 넘어가면 왼쪽 페이지.</p></div></li>
+          <li><span class="num">4</span><div><b>글자 미로</b> <span class="meta">Lv 6~7 · 전투 3</span><p>왼쪽 페이지. 문장처럼 늘어선 글자 벽 사이를 지그재그로 내려옴. 벽 글자가 길을 알려 주는 퍼즐.</p></div></li>
+          <li class="opt"><span class="num">+</span><div><b>각주 섬</b> <span class="meta">선택 · 전투 2~3</span><p>왼쪽 페이지 아래에 따로 떠 있는 작은 섬. 노가다·보물 구역.</p></div></li>
+          <li><span class="num">5</span><div><b>책등 길</b> <span class="meta">Lv 7 · 엘리트</span><p>두 페이지가 양옆 벽처럼 솟은 골짜기. 잉크 강 옆길을 따라 탑으로 걸어가고, 중간에 엘리트가 막고 있음.</p></div></li>
+          <li><span class="num">6</span><div><b>나선 서고 탑</b> <span class="meta">Lv 8 · 보스</span><p>책 위쪽 끝에 선 탑. 바깥 나선 계단을 빙글빙글 올라 꼭대기에서 보스전.</p></div></li>
+        </ol>
+      </div>
+      <div class="panel">
+        <h3>표시</h3>
+        <ul class="legend">
+          <li><span class="mk path"></span>메인 길</li>
+          <li><span class="mk dash"></span>선택 길 (점선)</li>
+          <li><span class="mk fight"></span>전투가 있는 곳 (보이는 적)</li>
+          <li><span class="mk save"></span>저장·회복 지점</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>이 형태로 한 이유</h3>
+        <ul class="legend" style="gap:9px">
+          <li>호드는 언어와 이성의 세피라라서 땅 자체를 펼친 책으로</li>
+          <li>길이 글 읽는 방향처럼 줄을 바꿔 가며 지그재그로 이어짐</li>
+          <li>탑이 책 위쪽 끝에 높이 서 있어서 어디서든 목적지가 보임</li>
+          <li>마지막 책등 길은 양쪽 페이지가 벽이 되어 보스 앞 긴장감을 줌</li>
+          <li>섬 아래에는 거꾸로 선 어두운 탑이 비침 (사마엘: 거짓의 그림자)</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+  const stage = document.getElementById("stage");
+  const canvas = document.getElementById("c");
+  const labelsEl = document.getElementById("labels");
+  if (!window.THREE) {
+    labelsEl.innerHTML = '<div style="position:absolute;inset:0;display:grid;place-items:center;color:#b2a79a">3D 미리보기를 불러오지 못했어요. 새로고침해 보세요.</div>';
+    return;
+  }
+  const reduceMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+  const scene = new THREE.Scene();
+  const BG = 0x0d0a14;
+  scene.background = new THREE.Color(BG);
+  scene.fog = new THREE.FogExp2(BG, 0.008);
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 500);
+  scene.add(new THREE.HemisphereLight(0xffd9b8, 0x1a1020, 0.75));
+  const key = new THREE.DirectionalLight(0xfff0e0, 0.75);
+  key.position.set(25, 40, 30);
+  scene.add(key);
+
+  // 별
+  {
+    const g = new THREE.BufferGeometry(), n = 600, p = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) {
+      const r = 150 + Math.random() * 50, t = Math.random() * Math.PI * 2, f = Math.random() * 1.2;
+      p[i*3] = r * Math.cos(t) * Math.cos(f); p[i*3+1] = r * Math.sin(f) + 10; p[i*3+2] = r * Math.sin(t) * Math.cos(f);
+    }
+    g.setAttribute("position", new THREE.BufferAttribute(p, 3));
+    scene.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0xffe7cc, size: 0.5, fog: false })));
+  }
+
+  // 책: 두 페이지가 책등(x=0)을 기준으로 바깥쪽이 살짝 올라간 V자
+  const TILT = 0.14;
+  const PAGE_W = 20, PAGE_D = 32;
+  const pageMat = new THREE.MeshStandardMaterial({ color: 0xcdbfa8, roughness: 0.9 });
+  const edgeMat = new THREE.MeshStandardMaterial({ color: 0xe8ddc9, roughness: 1 });
+  const coverMat = new THREE.MeshStandardMaterial({ color: 0x6b2f1c, roughness: 0.8 });
+  const inkMat = new THREE.MeshStandardMaterial({ color: 0x2b2340, roughness: 0.6 });
+  const hodMat = new THREE.MeshStandardMaterial({ color: 0xe5852e, roughness: 0.5, emissive: 0x6a2c00, emissiveIntensity: 0.5 });
+  const pages = {};
+  for (const side of [-1, 1]) {
+    const g = new THREE.Group();
+    g.rotation.z = -side * -TILT; // 바깥쪽이 올라가게
+    const page = new THREE.Mesh(new THREE.BoxGeometry(PAGE_W, 1.6, PAGE_D), pageMat);
+    page.position.set(side * (PAGE_W / 2 + 1), -0.8, 0);
+    const stack = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.4, PAGE_D - 0.4), edgeMat); // 바깥쪽 종이 단면
+    stack.position.set(side * (PAGE_W + 1.1), -0.85, 0);
+    const cover = new THREE.Mesh(new THREE.BoxGeometry(PAGE_W + 1.6, 0.6, PAGE_D + 1.4), coverMat);
+    cover.position.set(side * (PAGE_W / 2 + 1), -1.9, 0);
+    g.add(page, stack, cover);
+    scene.add(g);
+    pages[side] = g;
+  }
+  scene.updateMatrixWorld(true);
+  const surfY = x => Math.abs(x) > 1 ? Math.abs(x) * Math.sin(TILT) : 0; // 페이지 윗면 높이
+  const onPage = (x, z, lift = 0) => new THREE.Vector3(x, surfY(x) + lift, z);
+
+  // 책등 골짜기와 잉크 강
+  const spine = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.2, PAGE_D), new THREE.MeshStandardMaterial({ color: 0x4a2a22, roughness: 0.9 }));
+  spine.position.set(0, -1.2, 0);
+  scene.add(spine);
+  const river = new THREE.Mesh(new THREE.PlaneGeometry(1.2, PAGE_D), new THREE.MeshStandardMaterial({ color: 0x1b2a6b, emissive: 0x0b1440, emissiveIntensity: 0.8, roughness: 0.2 }));
+  river.rotation.x = -Math.PI / 2; river.position.set(0.5, -0.55, 0);
+  scene.add(river);
+
+  // 아래 바위
+  const rockMat = new THREE.MeshStandardMaterial({ color: 0x2c2230, roughness: 1, flatShading: true });
+  [[-11, 0, 14, 18], [11, 0, 14, 18], [0, -22, 7, 12]].forEach(([x, z, r, h]) => {
+    const m = new THREE.Mesh(new THREE.ConeGeometry(r, h, 9), rockMat);
+    m.rotation.x = Math.PI; m.position.set(x, -2.2 - h / 2, z);
+    scene.add(m);
+  });
+
+  // 오른쪽 페이지: 숫자 기둥 줄 / 왼쪽 페이지: 글자 벽 줄 (사이 빈칸이 길)
+  function row(side, z, x0, x1, kind) {
+    for (let x = x0; x <= x1; x += kind === "num" ? 1.6 : 1.1 + Math.random() * 0.9) {
+      const wx = side * x;
+      if (kind === "num") {
+        const h = 1 + Math.random() * 1.6;
+        const m = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.5, h, 8), Math.random() < 0.18 ? hodMat : inkMat);
+        m.position.copy(onPage(wx, z, h / 2));
+        scene.add(m);
+      } else {
+        const w = 0.6 + Math.random() * 0.9, h = 1.1 + Math.random() * 1.2;
+        const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.9), inkMat);
+        m.position.copy(onPage(wx, z, h / 2));
+        m.rotation.z = side * TILT;
+        scene.add(m);
+      }
+    }
+  }
+  row(1, 8, 8.5, 19, "num");  row(1, 0.5, 3.5, 13, "num");  row(1, -7.5, 8.5, 19, "num");
+  row(-1, -8, 8.5, 19, "txt"); row(-1, 0, 3.5, 13, "txt"); row(-1, 8, 8.5, 19, "txt");
+
+  // 나선 서고 탑 (책 위쪽 끝)
+  const towerBase = new THREE.Vector3(0, 0, -22);
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(6.5, 6, 1.6, 24), new THREE.MeshStandardMaterial({ color: 0x8a6a52, roughness: 0.9 }));
+  base.position.copy(towerBase).add(new THREE.Vector3(0, -0.8, 0));
+  scene.add(base);
+  const TOWER_H = 24;
+  const core = new THREE.Mesh(new THREE.CylinderGeometry(2.6, 3.2, TOWER_H, 20), new THREE.MeshStandardMaterial({ color: 0x6b4b3a, roughness: 0.8 }));
+  core.position.copy(towerBase).add(new THREE.Vector3(0, TOWER_H / 2, 0));
+  scene.add(core);
+  // 책장 무늬 띠
+  for (let i = 1; i < 8; i++) {
+    const band = new THREE.Mesh(new THREE.TorusGeometry(2.95 - i * 0.05, 0.12, 6, 24), hodMat);
+    band.rotation.x = Math.PI / 2; band.position.copy(towerBase).add(new THREE.Vector3(0, i * 3, 0));
+    scene.add(band);
+  }
+  const helixPts = [];
+  for (let i = 0; i <= 160; i++) {
+    const t = i / 160, a = t * Math.PI * 2 * 3.5 + Math.PI / 2;
+    helixPts.push(towerBase.clone().add(new THREE.Vector3(Math.cos(a) * 4.1, 0.6 + t * (TOWER_H - 1.5), Math.sin(a) * 4.1)));
+  }
+  const helix = new THREE.CatmullRomCurve3(helixPts);
+  scene.add(new THREE.Mesh(new THREE.TubeGeometry(helix, 300, 0.42, 6, false), new THREE.MeshStandardMaterial({ color: 0xffd9b0, roughness: 0.6 })));
+  // 꼭대기: 수성의 빛 + 떠도는 책
+  const topP = towerBase.clone().add(new THREE.Vector3(0, TOWER_H + 2.2, 0));
+  const orb = new THREE.Mesh(new THREE.SphereGeometry(1.4, 24, 16), new THREE.MeshBasicMaterial({ color: 0xffb36b }));
+  orb.position.copy(topP);
+  scene.add(orb);
+  const glow = new THREE.PointLight(0xff9a3c, 1.4, 60);
+  glow.position.copy(topP);
+  scene.add(glow);
+  const bookRing = new THREE.Group();
+  bookRing.position.copy(topP);
+  for (let i = 0; i < 10; i++) {
+    const a = i / 10 * Math.PI * 2;
+    const b = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.2, 0.3), i % 3 ? coverMat : hodMat);
+    b.position.set(Math.cos(a) * 3.4, Math.sin(i) * 0.4, Math.sin(a) * 3.4);
+    b.lookAt(new THREE.Vector3(0, b.position.y, 0));
+    bookRing.add(b);
+  }
+  scene.add(bookRing);
+
+  // 섬 아래 거꾸로 선 어두운 탑 (사마엘)
+  const ghost = new THREE.Mesh(new THREE.CylinderGeometry(2.6, 3.2, 18, 16), new THREE.MeshStandardMaterial({ color: 0x7a2a3c, transparent: true, opacity: 0.45, emissive: 0x2a0610 }));
+  ghost.position.set(0, -24, -10); ghost.rotation.z = Math.PI;
+  scene.add(ghost);
+  const ghostOrb = new THREE.Mesh(new THREE.SphereGeometry(1.2, 16, 12), new THREE.MeshBasicMaterial({ color: 0x8a2a3c, transparent: true, opacity: 0.6 }));
+  ghostOrb.position.set(0, -34.5, -10);
+  scene.add(ghostOrb);
+
+  // 메인 길
+  const raw = [
+    [17, 14.5], [14, 12], [6, 11.5], [5.5, 5], [15, 4], [15.5, -3.5], [6, -4], [5.5, -11], [3, -13.5],
+  ];
+  const leftRaw = [
+    [-3, -13.5], [-6, -12], [-15.5, -11.5], [-15, -4], [-6, -3.5], [-5.5, 4], [-15.5, 4.5], [-15, 11.5], [-5, 12.5], [-1.2, 14],
+  ];
+  const pts = raw.map(([x, z]) => onPage(x, z, 0.25));
+  // 넘김 다리: 책등 위를 아치로
+  pts.push(new THREE.Vector3(1, 3.5, -14), new THREE.Vector3(-1, 3.5, -14));
+  leftRaw.forEach(([x, z]) => pts.push(onPage(x, z, 0.25)));
+  // 책등 길: 잉크 강 옆을 따라 탑으로
+  [[-0.6, 9], [-0.6, 0], [-0.6, -9], [-0.6, -15.5], [0, -18.5]].forEach(([x, z]) => pts.push(new THREE.Vector3(x, -0.35, z)));
+  pts.push(towerBase.clone().add(new THREE.Vector3(0, 0.3, 4)));
+  const path = new THREE.CatmullRomCurve3(pts, false, "catmullrom", 0.3);
+  scene.add(new THREE.Mesh(new THREE.TubeGeometry(path, 400, 0.3, 6, false), new THREE.MeshBasicMaterial({ color: 0xffd9b0 })));
+
+  // 책갈피 다리 (예소드에서 내려옴)
+  const startP = onPage(17, 14.5, 0.25);
+  {
+    const c = new THREE.CatmullRomCurve3([
+      startP.clone().add(new THREE.Vector3(0, 0, 1)),
+      startP.clone().add(new THREE.Vector3(2, -3, 5)),
+      startP.clone().add(new THREE.Vector3(3, -9, 9)),
+      startP.clone().add(new THREE.Vector3(2, -16, 12)),
+    ]);
+    const ribbon = new THREE.Mesh(new THREE.TubeGeometry(c, 40, 0.55, 4, false), new THREE.MeshStandardMaterial({ color: 0xe5852e, emissive: 0x5a2400, emissiveIntensity: 0.6 }));
+    ribbon.scale.set(1, 1, 1);
+    scene.add(ribbon);
+  }
+
+  // 각주 섬 (선택)
+  const footP = new THREE.Vector3(-27, 0.5, 19);
+  {
+    const isle = new THREE.Mesh(new THREE.CylinderGeometry(4, 3.6, 1.2, 12), pageMat);
+    isle.position.copy(footP).add(new THREE.Vector3(0, -0.6, 0));
+    scene.add(isle);
+    const r = new THREE.Mesh(new THREE.ConeGeometry(3.6, 6, 8), rockMat);
+    r.rotation.x = Math.PI; r.position.copy(footP).add(new THREE.Vector3(0, -4.2, 0));
+    scene.add(r);
+    const asterisk = new THREE.Mesh(new THREE.OctahedronGeometry(0.9), hodMat);
+    asterisk.position.copy(footP).add(new THREE.Vector3(0, 2.2, 0));
+    scene.add(asterisk);
+    const from = onPage(-15, 11.5, 0.3);
+    const lp = [];
+    for (let i = 0; i <= 12; i++) lp.push(from.clone().lerp(footP.clone().add(new THREE.Vector3(0, 0.3, 0)), i / 12));
+    const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(lp), new THREE.LineDashedMaterial({ color: 0xffd9b0, dashSize: 0.9, gapSize: 0.6 }));
+    line.computeLineDistances();
+    scene.add(line);
+  }
+
+  // 떠다니는 글자
+  const glyphs = "א ב ג ד 1 2 3 7 9 Σ ∞ ? ㄱ ㅎ A Ω π".split(" ");
+  const floaters = [];
+  glyphs.forEach((ch, i) => {
+    const cv = document.createElement("canvas"); cv.width = cv.height = 128;
+    const cx = cv.getContext("2d");
+    cx.fillStyle = "#ffcf9a"; cx.font = "bold 92px serif"; cx.textAlign = "center"; cx.textBaseline = "middle";
+    cx.fillText(ch, 64, 70);
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(cv), transparent: true, opacity: 0.75, depthWrite: false }));
+    const x = (Math.random() - 0.5) * 44, z = (Math.random() - 0.5) * 40, y = 4 + Math.random() * 10;
+    sp.position.set(x, y, z); sp.scale.set(1.6, 1.6, 1);
+    scene.add(sp);
+    floaters.push({ sp, y, ph: i });
+  });
+
+  // 길가 등불
+  [[10, 11.8], [15.2, 0], [-10, -3.8], [-15, 8], [-0.6, -6]].forEach(([x, z]) => {
+    const p = x === -0.6 ? new THREE.Vector3(x, 0.4, z) : onPage(x, z, 1.2);
+    const l = new THREE.PointLight(0xffa04a, 0.6, 14); l.position.copy(p); scene.add(l);
+  });
+
+  // 전투 · 저장 표시
+  const fightMat = new THREE.MeshBasicMaterial({ color: 0xe0607a });
+  const saveMat = new THREE.MeshBasicMaterial({ color: 0x8fe3d0 });
+  const markers = [];
+  const mark = (p, mat, s) => { const m = new THREE.Mesh(new THREE.OctahedronGeometry(s), mat); m.position.copy(p); scene.add(m); markers.push({ m, y: p.y }); };
+  const up = (t, h = 1.5) => path.getPointAt(t).add(new THREE.Vector3(0, h, 0));
+  [0.08, 0.17, 0.27, 0.48, 0.57, 0.66].forEach(t => mark(up(t), fightMat, 0.45));
+  mark(up(0.85), fightMat, 0.75); // 엘리트
+  mark(footP.clone().add(new THREE.Vector3(1.5, 1.6, -1)), fightMat, 0.45);
+  mark(footP.clone().add(new THREE.Vector3(-1.5, 1.6, 1)), fightMat, 0.45);
+  mark(up(0.005, 1.8), saveMat, 0.6);
+  mark(up(0.38, 1.8), saveMat, 0.6);
+  mark(up(0.94, 1.6), saveMat, 0.6);
+
+  // 라벨
+  const labels = [];
+  const label = (html, pos, cls) => {
+    const el = document.createElement("div");
+    el.className = "tag" + (cls ? " " + cls : "");
+    el.innerHTML = html; labelsEl.appendChild(el); labels.push({ el, pos });
+  };
+  label('<span class="n">1</span>책갈피 다리', startP.clone().add(new THREE.Vector3(0, 3, 0)));
+  label('<span class="n">2</span>숫자의 정원', onPage(11, 0, 5));
+  label('<span class="n">3</span>넘김 다리', new THREE.Vector3(0, 6, -14));
+  label('<span class="n">4</span>글자 미로', onPage(-11, 0, 5));
+  label('<span class="n">+</span>각주 섬 (선택)', footP.clone().add(new THREE.Vector3(0, 4.5, 0)), "opt");
+  label('<span class="n">5</span>책등 길', new THREE.Vector3(0, 3, 4));
+  label('<span class="n">6</span>나선 서고 탑', topP.clone().add(new THREE.Vector3(0, 3.5, 0)), "boss");
+  label('예소드에서 오는 책갈피 끈', startP.clone().add(new THREE.Vector3(3, -10, 9)));
+  label('섬 아래: 거꾸로 선 탑 (사마엘)', new THREE.Vector3(0, -37, -10), "dark");
+
+  // 카메라
+  const view = { theta: 0.75, phi: 0.95, radius: 82, target: new THREE.Vector3(0, 4, -4) };
+  let goal = null;
+  const V = {
+    top:   { theta: 0.0, phi: 0.12, radius: 84, target: new THREE.Vector3(0, 0, -3) },
+    angle: { theta: 0.75, phi: 0.95, radius: 82, target: new THREE.Vector3(0, 4, -4) },
+    spine: { theta: 0.0, phi: 1.38, radius: 24, target: new THREE.Vector3(0, 5, -10) },
+    under: { theta: 0.5, phi: 1.95, radius: 60, target: new THREE.Vector3(0, -12, -6) },
+  };
+  function setGoal(g) { if (reduceMotion) { Object.assign(view, { theta: g.theta, phi: g.phi, radius: g.radius }); view.target.copy(g.target); } else goal = g; }
+  document.getElementById("vTop").onclick = () => setGoal(V.top);
+  document.getElementById("vAngle").onclick = () => setGoal(V.angle);
+  document.getElementById("vSpine").onclick = () => setGoal(V.spine);
+  document.getElementById("vUnder").onclick = () => setGoal(V.under);
+  const tLabels = document.getElementById("tLabels");
+  const hint = stage.querySelector(".hint");
+  tLabels.onclick = () => {
+    const on = labelsEl.hidden;
+    labelsEl.hidden = !on; hint.hidden = !on;
+    tLabels.setAttribute("aria-pressed", String(on));
+    tLabels.textContent = on ? "글자 표시" : "글자 숨김";
+  };
+  const zoom = f => { goal = null; view.radius = Math.min(150, Math.max(12, view.radius * f)); };
+  document.getElementById("zIn").onclick = () => zoom(0.85);
+  document.getElementById("zOut").onclick = () => zoom(1.18);
+  let drag = false, lx = 0, ly = 0;
+  canvas.addEventListener("pointerdown", e => { drag = true; lx = e.clientX; ly = e.clientY; canvas.setPointerCapture(e.pointerId); goal = null; });
+  canvas.addEventListener("pointermove", e => {
+    if (!drag) return;
+    view.theta -= (e.clientX - lx) * 0.006;
+    view.phi = Math.min(2.4, Math.max(0.08, view.phi - (e.clientY - ly) * 0.006));
+    lx = e.clientX; ly = e.clientY;
+  });
+  canvas.addEventListener("pointerup", () => { drag = false; });
+  canvas.addEventListener("wheel", e => { e.preventDefault(); zoom(e.deltaY > 0 ? 1.08 : 0.92); }, { passive: false });
+
+  function resize() {
+    const w = stage.clientWidth, h = stage.clientHeight;
+    renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+  }
+  addEventListener("resize", resize); resize();
+
+  const tmp = new THREE.Vector3(), clock = new THREE.Clock();
+  function frame() {
+    const t = clock.getElapsedTime();
+    if (goal) {
+      const k = 0.08;
+      view.theta += (goal.theta - view.theta) * k; view.phi += (goal.phi - view.phi) * k;
+      view.radius += (goal.radius - view.radius) * k; view.target.lerp(goal.target, k);
+      if (Math.abs(goal.radius - view.radius) < 0.05 && Math.abs(goal.phi - view.phi) < 0.002) goal = null;
+    }
+    const { theta, phi, radius, target } = view;
+    camera.position.set(target.x + radius * Math.sin(phi) * Math.sin(theta), target.y + radius * Math.cos(phi), target.z + radius * Math.sin(phi) * Math.cos(theta));
+    camera.lookAt(target);
+    if (!reduceMotion) {
+      bookRing.rotation.y = t * 0.35;
+      orb.scale.setScalar(1 + Math.sin(t * 2) * 0.06);
+      floaters.forEach(f => { f.sp.position.y = f.y + Math.sin(t * 0.7 + f.ph) * 0.8; });
+      markers.forEach((k, i) => { k.m.position.y = k.y + Math.sin(t * 2 + i) * 0.15; k.m.rotation.y = t; });
+    }
+    renderer.render(scene, camera);
+    const w = stage.clientWidth, h = stage.clientHeight;
+    labels.forEach(l => {
+      tmp.copy(l.pos).project(camera);
+      l.el.hidden = tmp.z > 1;
+      l.el.style.left = ((tmp.x + 1) / 2 * w) + "px";
+      l.el.style.top = ((1 - tmp.y) / 2 * h) + "px";
+    });
+    requestAnimationFrame(frame);
+  }
+  frame();
+})();
+</script>
+
+</html>
