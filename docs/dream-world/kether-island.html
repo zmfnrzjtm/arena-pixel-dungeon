@@ -85,7 +85,7 @@ aside { display: grid; gap: 14px; min-width: 0; }
 <div class="wrap">
   <header>
     <h1>케테르 섬 설계도</h1>
-    <p>7챕터(최종장) 섬. 나무 맨 꼭대기, 가장 높이 떠 있는 하얀 왕관 섬이에요. 머리 위에는 잠의 요정의 거대한 그림 우산이 펼쳐져 있어요. 동화는 안데르센의 『올레 루쾨이에』. 우산 그림 속 밤들을 지나며 왕관 섬을 나선으로 오르고, 꼭대기 근원의 빛 앞에서 최종 보스와 싸웁니다.</p>
+    <p>7챕터(최종장) 섬. <b>섬 전체가 잠의 요정 올레 루쾨이에가 펼친 거대한 그림 우산</b>이에요. 우산 천은 여덟 칸이고, 그림이 있는 칸 하나 = 그날 밤의 꿈 하나. 플레이어는 우산 천 위를 칸에서 칸으로 돌며 위로 올라가고, 우산 꼭대기의 왕관 장식(케테르 = 왕관)에서 최종 보스와 싸웁니다.</p>
   </header>
   <div class="main">
     <div class="stage" id="stage">
@@ -93,12 +93,11 @@ aside { display: grid; gap: 14px; min-width: 0; }
       <div class="labels" id="labels"></div>
       <div class="hint">드래그: 회전 · 휠/버튼: 확대</div>
       <div class="controls">
-        <button type="button" id="vTop">위에서</button>
+        <button type="button" id="vTop">위에서 (여덟 칸)</button>
         <button type="button" id="vAngle">비스듬히</button>
-        <button type="button" id="vFar">멀리서 (우산까지)</button>
+        <button type="button" id="vSide">옆에서 (우산 모양)</button>
         <button type="button" id="vSummit">꼭대기 가까이</button>
-        <button type="button" id="vUnder">섬 아래</button>
-        <button type="button" id="tUmb" aria-pressed="true">우산 표시</button>
+        <button type="button" id="vUnder">우산 아래</button>
         <button type="button" id="tLabels" aria-pressed="true">글자 표시</button>
         <button type="button" id="zIn" aria-label="확대">＋</button>
         <button type="button" id="zOut" aria-label="축소">－</button>
@@ -106,32 +105,45 @@ aside { display: grid; gap: 14px; min-width: 0; }
     </div>
     <aside>
       <div class="panel">
-        <h3>구역 순서 (길을 따라)</h3>
+        <h3>한눈에</h3>
+        <ul class="legend" style="gap:9px">
+          <li>섬 = 우산 하나</li>
+          <li>우산 천 여덟 칸 = 꿈 그림 여섯 칸 + 그림 없는 회색 칸 + 손잡이로 내려가는 흰 칸</li>
+          <li>칸 위를 한 바퀴 돌며 꼭대기로 = 진행 방향</li>
+          <li>꼭대기 왕관 = 케테르, 모든 꿈의 근원 = 최종 보스</li>
+          <li>우산 손잡이 아래 = 그림자 (검은 우산)</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>구역 순서 (우산 칸을 따라)</h3>
         <ol class="zones">
-          <li><span class="num">1</span><div><b>왕관의 문</b> <span class="meta">Lv 23 · 도착 · 저장</span><p>다아트(심연)를 건너오면 남쪽, 비나에서 오면 남서쪽, 호크마에서 오면 남동쪽 다리로 도착. 세 길이 남쪽 문 앞에서 만남.</p></div></li>
-          <li><span class="num">2</span><div><b>꽃나무와 그림 속 바다</b> <span class="meta">Lv 23~24 · 전투 3</span><p>바깥 바닥. 동화의 월요일·화요일 밤: 방 안 꽃이 나무만큼 자라고, 벽에 걸린 그림 속으로 들어가 배를 탐. 거대한 꽃과 액자가 서 있음.</p></div></li>
-          <li><span class="num">3</span><div><b>황새의 비와 쥐의 결혼식</b> <span class="meta">Lv 24 · 전투 3 · 저장</span><p>첫째 단. 수요일·목요일 밤: 비가 쏟아지고 황새가 날아가며, 아주 작은 쥐들의 결혼식이 열림. 비 내리는 길과 작은 쥐 행렬.</p></div></li>
-          <li class="opt"><span class="num">+</span><div><b>별 닦는 다락</b> <span class="meta">선택 · 전투 2~3</span><p>동쪽 하늘에 떠 있는 작은 섬. 토요일 밤에 별을 떼어 닦는다는 이야기에서. 노가다·최종 장비 보물 구역.</p></div></li>
-          <li class="plain"><span class="num">4</span><div><b>그림 없는 우산</b> <span class="meta">Lv 25 · 엘리트</span><p>둘째 단. 동화에서 말 안 듣는 아이에게 펴는 그림 없는 우산(꿈 없는 잠). 회색 우산 아래에서는 꿈이 꺼지는 연출.</p></div></li>
-          <li class="boss"><span class="num">5</span><div><b>근원의 빛</b> <span class="meta">Lv 25 · 최종 보스</span><p>꼭대기. 모든 꿈이 시작된 하얀 빛 기둥 위로 그림 우산이 펼쳐져 있음. 영원히 꿈을 보여 주려는 잠의 요정 올레 루쾨이에와 싸우고 깨어나야 함.</p></div></li>
+          <li><span class="num">1</span><div><b>잠드는 방</b> <span class="meta">Lv 23 · 도착 · 저장</span><p>남쪽 칸. 다아트·비나·호크마 다리가 우산 가장자리에 닿음. 침대가 있는 방 그림. 동화는 요정이 잠든 아이 방에 몰래 들어오며 시작.</p></div></li>
+          <li><span class="num">2</span><div><b>꽃나무의 밤</b> <span class="meta">Lv 23 · 전투 1</span><p>월요일 밤. 화분 꽃이 나무만큼 자라는 꿈. 거대한 꽃 숲.</p></div></li>
+          <li><span class="num">3</span><div><b>그림 속 배의 밤</b> <span class="meta">Lv 23~24 · 전투 1</span><p>화요일 밤. 벽에 걸린 그림 속으로 들어가 배를 타는 꿈. 커다란 액자와 연못 위의 배.</p></div></li>
+          <li><span class="num">4</span><div><b>비와 황새의 밤</b> <span class="meta">Lv 24 · 전투 1 · 저장</span><p>수요일 밤. 비가 쏟아지고 황새가 날아가는 꿈. 칸 위에만 비구름이 떠 있음.</p></div></li>
+          <li><span class="num">5</span><div><b>쥐 결혼식의 밤</b> <span class="meta">Lv 24 · 전투 1</span><p>목요일 밤. 아주 작은 쥐들의 결혼식. 플레이어가 작아지는 연출, 골무와 쥐 행렬.</p></div></li>
+          <li><span class="num">6</span><div><b>별 닦는 밤</b> <span class="meta">Lv 24~25 · 전투 2</span><p>토요일 밤. 하늘의 별을 떼어 와서 닦는 꿈. 사다리와 별 더미.</p></div></li>
+          <li class="plain"><span class="num">7</span><div><b>그림 없는 칸</b> <span class="meta">Lv 25 · 엘리트</span><p>회색 칸. 말 안 듣는 아이에게 펴 주는 '그림 없는 우산' = 꿈 없는 잠. 아무것도 없는 회색 칸에서 엘리트전.</p></div></li>
+          <li class="boss"><span class="num">8</span><div><b>우산 꼭대기의 왕관</b> <span class="meta">Lv 25 · 최종 보스</span><p>모든 칸이 모이는 꼭대기. 왕관 장식 안의 하얀 빛이 모든 꿈의 근원. 꿈을 영원히 보여 주려는 올레 루쾨이에와 싸우고 깨어남.</p></div></li>
+          <li class="opt"><span class="num">+</span><div><b>손잡이 고리</b> <span class="meta">선택 · 전투 2~3</span><p>남서쪽 흰 칸(그림 없는 칸 다음) 가장자리에서 손잡이를 타고 내려가면 나오는 고리 끝 발판. 최종 장비 보물 구역.</p></div></li>
         </ol>
       </div>
       <div class="panel">
         <h3>표시</h3>
         <ul class="legend">
           <li><span class="mk path"></span>메인 길 / <span class="mk dash" style="width:22px"></span>선택 길</li>
-          <li><span class="mk umb"></span>그림 우산 (그림 일곱 칸 + 그림 없는 한 칸)</li>
           <li><span class="mk fight"></span>전투 / <span class="mk save"></span>저장·회복</li>
         </ul>
       </div>
       <div class="panel">
-        <h3>이 형태로 한 이유</h3>
+        <h3>왜 우산인가</h3>
         <ul class="legend" style="gap:9px">
-          <li>케테르는 '왕관', 모든 것의 근원이고 색은 순백. 천체 자리는 '최초의 소용돌이'(프리뭄 모빌레)라서, 왕관 모양 섬 둘레를 빛 입자가 소용돌이치고 길도 나선으로 오름</li>
-          <li>『올레 루쾨이에』는 밤마다 우산을 펴서 꿈을 보여 주는 요정 = 모든 꿈의 근원. 그래서 섬 전체가 그 우산 아래에 있고, 우산 그림 칸이 구역이 됨. 그림 없는 우산은 엘리트</li>
-          <li>꿈과 현실 게임의 마지막이니 최종 보스는 꿈을 계속 보여 주려는 잠의 요정 자신. 이기면 깨어남</li>
-          <li>나무에서 케테르와 이어진 곳은 호크마, 비나, 그리고 다아트를 건너 티페레트. 그래서 남쪽·남서쪽·남동쪽 다리 셋이 전부 열려 있음. 위로는 아인 소프(끝없는 빛)로 이어지는 빛줄기만 있음</li>
-          <li>섬 아래에는 왕관 섬이 쌍둥이처럼 거꾸로 비치고, 말을 탄 형이 그 둘레를 돎 (타우미엘: 둘로 갈라진 근원. 원작에서 올레 루쾨이에의 형은 같은 이름의 '죽음')</li>
+          <li>케테르 = 모든 것의 근원. 이 게임에서는 '모든 꿈의 근원'</li>
+          <li>『올레 루쾨이에』에서 꿈은 요정이 우산을 펴야 생김. 그림 있는 우산을 펴면 꿈을 꾸고, 그림 없는 우산을 펴면 꿈 없이 잠. 그래서 꿈 세계의 꼭대기 섬이 그 우산</li>
+          <li>왕관은 우산 꼭대기 장식으로만 넣음. 케테르(왕관)를 보여 주되 우산 모양을 해치지 않게</li>
+          <li>나무에서 케테르와 이어진 곳은 호크마, 비나, 그리고 다아트를 건너 티페레트. 맨 위라 닫힌 다리 없음</li>
+          <li>손잡이 아래로 똑같은 우산이 검게 거꾸로 매달려 있고, 말 탄 사람이 그 둘레를 돎. 원작에서 올레 루쾨이에의 형은 같은 이름의 '죽음'이고, 말을 타고 다님 (타우미엘: 둘로 갈라진 근원)</li>
+          <li>금요일 밤은 동화 내용을 정확히 확인하지 못해서 칸에 넣지 않음</li>
         </ul>
       </div>
     </aside>
@@ -154,236 +166,264 @@ aside { display: grid; gap: 14px; min-width: 0; }
   const scene = new THREE.Scene();
   const BG = 0x08080f;
   scene.background = new THREE.Color(BG);
-  scene.fog = new THREE.FogExp2(BG, 0.006);
+  scene.fog = new THREE.FogExp2(BG, 0.005);
   const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 600);
   scene.add(new THREE.HemisphereLight(0xffffff, 0x101018, 0.9));
-  const key = new THREE.DirectionalLight(0xfffbf0, 0.7);
-  key.position.set(-25, 40, 30);
+  const key = new THREE.DirectionalLight(0xfffbf0, 0.8);
+  key.position.set(-25, 50, 30);
   scene.add(key);
 
-  // 별
   {
     const g = new THREE.BufferGeometry(), n = 600, p = new Float32Array(n * 3);
     for (let i = 0; i < n; i++) {
-      const r = 160 + Math.random() * 60, t = Math.random() * Math.PI * 2, f = (Math.random() * 2 - 1) * 1.3;
+      const r = 170 + Math.random() * 60, t = Math.random() * Math.PI * 2, f = (Math.random() * 2 - 1) * 1.3;
       p[i*3] = r * Math.cos(t) * Math.cos(f); p[i*3+1] = r * Math.sin(f); p[i*3+2] = r * Math.sin(t) * Math.cos(f);
     }
     g.setAttribute("position", new THREE.BufferAttribute(p, 3));
     scene.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0xffffff, size: 0.5, fog: false })));
   }
 
-  // 왕관 섬: 바닥 원판 + 세 단 + 테두리 왕관 뾰족탑
-  const R = 26;
-  const white = new THREE.MeshStandardMaterial({ color: 0xf2f0f8, roughness: 0.6 });
-  const pearl = new THREE.MeshStandardMaterial({ color: 0xe4e0f0, roughness: 0.4 });
-  const crown = new THREE.Group();
-  const buildCrown = (mat, under) => {
-    const g = new THREE.Group();
-    const base = new THREE.Mesh(new THREE.CylinderGeometry(R, R - 1, 2, 64), mat); base.position.y = -1; g.add(base);
-    [[14, 3, 0], [9, 3, 3], [5, 3, 6]].forEach(([r, h, y0]) => {
-      const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r + 0.3, h, 48), mat); m.position.y = y0 + h / 2; g.add(m);
-    });
-    for (let k = 0; k < 10; k++) {
-      const a = k / 10 * Math.PI * 2 + Math.PI / 10;
-      const h = k % 2 ? 7 : 11;
-      const sp = new THREE.Mesh(new THREE.ConeGeometry(1.6, h, 4), mat);
-      sp.position.set(Math.cos(a) * (R - 1.5), h / 2, Math.sin(a) * (R - 1.5)); g.add(sp);
-      if (!(k % 2) && !under) {
-        const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.7), new THREE.MeshBasicMaterial({ color: 0xffe8a0 }));
-        gem.position.set(Math.cos(a) * (R - 1.5), h + 0.9, Math.sin(a) * (R - 1.5)); g.add(gem);
-      }
-    }
-    if (!under) {
-      const rock = new THREE.Mesh(new THREE.ConeGeometry(R - 1, 22, 14), new THREE.MeshStandardMaterial({ color: 0x3a3848, roughness: 1, flatShading: true }));
-      rock.rotation.x = Math.PI; rock.position.y = -13; g.add(rock);
-    }
-    return g;
+  // 우산 천 = 구의 윗부분. surf(θ, φ)는 SphereGeometry와 같은 좌표식
+  const RS = 40, YTIP = 12, THMAX = 0.72;
+  const C = new THREE.Vector3(0, YTIP - RS, 0);
+  const surf = (th, ph, lift = 0) => {
+    const r = RS + lift;
+    return new THREE.Vector3(-r * Math.cos(ph) * Math.sin(th), r * Math.cos(th), r * Math.sin(ph) * Math.sin(th)).add(C);
   };
-  crown.add(buildCrown(white, false));
-  scene.add(crown);
-
-  // 근원의 빛 기둥
-  const pillar = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.1, 18, 20, 1, true), new THREE.MeshBasicMaterial({ color: 0xfffbe8, transparent: true, opacity: 0.75, side: THREE.DoubleSide }));
-  pillar.position.y = 9 + 9; scene.add(pillar);
-  const core = new THREE.Mesh(new THREE.SphereGeometry(1.6, 24, 16), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-  core.position.y = 11; scene.add(core);
-  const coreLight = new THREE.PointLight(0xfff4d8, 1.6, 60); coreLight.position.y = 12; scene.add(coreLight);
-  // 아인 소프로 이어지는 빛줄기
-  const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 2.5, 140, 16, 1, true), new THREE.MeshBasicMaterial({ color: 0xfffbe8, transparent: true, opacity: 0.18, side: THREE.DoubleSide, fog: false, blending: THREE.AdditiveBlending, depthWrite: false }));
-  beam.position.y = 36 + 70; scene.add(beam);
-
-  // 그림 우산 (8칸: 그림 7 + 그림 없는 1)
+  // 칸 k의 가운데 방향: k=0이 남쪽(+z)
+  const PH0 = Math.PI / 2, STEP = Math.PI / 4;
+  const phc = k => PH0 + k * STEP;
+  const PANELS = [
+    { name: "잠드는 방", day: "", color: 0xf0e6d0 },
+    { name: "꽃나무의 밤", day: "월", color: 0xf0a0b4 },
+    { name: "그림 속 배의 밤", day: "화", color: 0x8cb8ec },
+    { name: "비와 황새의 밤", day: "수", color: 0x9aa8c8 },
+    { name: "쥐 결혼식의 밤", day: "목", color: 0xe8c878 },
+    { name: "별 닦는 밤", day: "토", color: 0x4a4a8a },
+    { name: "그림 없는 칸", day: "", color: 0x5a5a62 },
+  ];
+  // 여덟 번째 칸: 손잡이 고리(선택)로 내려가는 흰 칸
+  PANELS[7] = { name: "", day: "", color: 0xdedcea };
   const umbrella = new THREE.Group();
+  scene.add(umbrella);
+  PANELS.forEach((pn, k) => {
+    const m = new THREE.Mesh(new THREE.SphereGeometry(RS, 14, 12, phc(k) - STEP / 2, STEP, 0, THMAX),
+      new THREE.MeshStandardMaterial({ color: pn.color, roughness: 0.85, side: THREE.DoubleSide }));
+    m.position.copy(C); umbrella.add(m);
+  });
+  // 우산살 + 끝 장식
+  const ribMat = new THREE.MeshStandardMaterial({ color: 0x2a2430, roughness: 0.6 });
+  for (let k = 0; k < 8; k++) {
+    const ph = phc(k) - STEP / 2, rp = [];
+    for (let i = 0; i <= 16; i++) rp.push(surf(THMAX * i / 16 * 1.02, ph, 0.25));
+    umbrella.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(rp), 32, 0.35, 6, false), ribMat));
+    const knob = new THREE.Mesh(new THREE.SphereGeometry(0.8, 10, 8), ribMat);
+    knob.position.copy(surf(THMAX * 1.02, ph, 0.25)); umbrella.add(knob);
+  }
+  // 가장자리 물결 테두리
   {
-    const cols = [0xe89090, 0x88b8e8, 0xe8c870, 0x88c898, 0xc0a0e8, 0xf0b088, 0x90d8d8, 0x5a5a66];
+    const ep = [];
+    for (let i = 0; i <= 160; i++) ep.push(surf(THMAX - 0.01 + Math.sin(i / 160 * Math.PI * 16) * 0.012, i / 160 * Math.PI * 2, 0.1));
+    umbrella.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(ep, true), 320, 0.25, 5, true), new THREE.MeshStandardMaterial({ color: 0xf4f0e0 })));
+  }
+  // 손잡이: 꼭대기에서 곧게 내려와 고리로
+  const SHAFT_BOTTOM = -34;
+  {
+    const sh = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, YTIP - SHAFT_BOTTOM, 10), ribMat);
+    sh.position.y = (YTIP + SHAFT_BOTTOM) / 2; scene.add(sh);
+    const hook = new THREE.Mesh(new THREE.TorusGeometry(4, 0.7, 8, 24, Math.PI), new THREE.MeshStandardMaterial({ color: 0x8a5a3a, roughness: 0.6 }));
+    hook.position.set(4, SHAFT_BOTTOM, 0); hook.rotation.z = Math.PI; scene.add(hook);
+  }
+
+  // 꼭대기: 왕관 장식 + 근원의 빛
+  const TIP = new THREE.Vector3(0, YTIP, 0);
+  {
+    const gold = new THREE.MeshStandardMaterial({ color: 0xe9c25a, metalness: 0.5, roughness: 0.35, emissive: 0x3a2a00 });
+    const band = new THREE.Mesh(new THREE.CylinderGeometry(4.2, 4.6, 1.6, 32, 1, true), gold);
+    band.material.side = THREE.DoubleSide;
+    band.position.copy(TIP).add(new THREE.Vector3(0, 0.6, 0)); scene.add(band);
     for (let k = 0; k < 8; k++) {
-      const panel = new THREE.Mesh(new THREE.SphereGeometry(24, 6, 8, k * Math.PI / 4, Math.PI / 4, 0, 1.05),
-        new THREE.MeshStandardMaterial({ color: cols[k], side: THREE.DoubleSide, roughness: 0.8, transparent: true, opacity: 0.92 }));
-      umbrella.add(panel);
-      // 칸마다 작은 그림(별·달·배 같은 무늬 대신 점 몇 개)
-      if (k < 7) for (let j = 0; j < 3; j++) {
-        const th = 0.45 + j * 0.18, ph = k * Math.PI / 4 + Math.PI / 8 + (j - 1) * 0.15;
-        const dot = new THREE.Mesh(new THREE.CircleGeometry(0.9, 10), new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, transparent: true, opacity: 0.8 }));
-        const pos = new THREE.Vector3().setFromSphericalCoords(23.8, th, ph);
-        dot.position.copy(pos); dot.lookAt(0, 0, 0); umbrella.add(dot);
-      }
+      const a = k / 8 * Math.PI * 2;
+      const pt = new THREE.Mesh(new THREE.ConeGeometry(0.8, 2.6, 4), gold);
+      pt.position.copy(TIP).add(new THREE.Vector3(Math.cos(a) * 4.2, 2.6, Math.sin(a) * 4.2)); scene.add(pt);
+      const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.35), new THREE.MeshBasicMaterial({ color: k % 2 ? 0x8cb8ec : 0xf0a0b4 }));
+      gem.position.copy(TIP).add(new THREE.Vector3(Math.cos(a) * 4.45, 0.6, Math.sin(a) * 4.45)); scene.add(gem);
     }
-    const tip = new THREE.Mesh(new THREE.ConeGeometry(0.5, 3, 8), new THREE.MeshStandardMaterial({ color: 0x3a3040 }));
-    tip.position.y = 25.5; umbrella.add(tip);
-    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 22, 8), new THREE.MeshStandardMaterial({ color: 0x3a3040 }));
-    shaft.position.y = 13; umbrella.add(shaft);
-    umbrella.position.y = 14;
-    scene.add(umbrella);
   }
+  const core = new THREE.Mesh(new THREE.SphereGeometry(1.8, 24, 16), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+  core.position.copy(TIP).add(new THREE.Vector3(0, 3.4, 0)); scene.add(core);
+  const coreLight = new THREE.PointLight(0xfff4d8, 1.4, 50); coreLight.position.copy(core.position); scene.add(coreLight);
 
-  // 나선 길: 바닥(r 20) → 첫째 단 → 둘째 단 → 꼭대기
-  const clamp01 = v => Math.max(0, Math.min(1, v));
-  const yAt = r => 3 * clamp01((15.2 - r) / 1.2) + 3 * clamp01((10.2 - r) / 1.2) + 3 * clamp01((6.2 - r) / 1.2);
-  const TURNS = 1.6;
-  const spiral = t => {
-    const a = Math.PI / 2 + t * Math.PI * 2 * TURNS, r = 20 - 17 * t;
-    return new THREE.Vector3(r * Math.cos(a), yAt(r) + 0.3, r * Math.sin(a));
-  };
-  const pts = [new THREE.Vector3(0, 0.3, 27), new THREE.Vector3(0, 0.3, 23)];
-  for (let k = 0; k <= 120; k++) pts.push(spiral(k / 120));
-  const path = new THREE.CatmullRomCurve3(pts, false, "catmullrom", 0.3);
-  scene.add(new THREE.Mesh(new THREE.TubeGeometry(path, 700, 0.28, 6, false), new THREE.MeshBasicMaterial({ color: 0xfffbe8 })));
-
-  // 1 왕관의 문
+  // 칸별 그림(소품). 칸 가운데쯤 세움
+  const at = (k, th = 0.42, dph = 0) => surf(th, phc(k) + dph, 0);
+  const std = c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.7 });
+  const outward = (k) => new THREE.Vector3(-Math.cos(phc(k)), 0, Math.sin(phc(k)));
+  // 0 잠드는 방: 침대 + 창문
   {
-    const gm = new THREE.MeshStandardMaterial({ color: 0xe9c25a, metalness: 0.4, roughness: 0.4 });
-    const l = new THREE.Mesh(new THREE.BoxGeometry(0.8, 6, 0.8), gm); l.position.set(-2.4, 3, 24.5);
-    const r = l.clone(); r.position.x = 2.4;
-    const top = new THREE.Mesh(new THREE.TorusGeometry(2.4, 0.4, 8, 20, Math.PI), gm); top.position.set(0, 6, 24.5);
-    scene.add(l, r, top);
+    const p = at(0, 0.5, 0.18);
+    const bed = new THREE.Mesh(new THREE.BoxGeometry(3, 1, 5), std(0x8a5a3a)); bed.position.copy(p).add(new THREE.Vector3(0, 0.5, 0));
+    const sheet = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.4, 3.4), std(0xb8c8f0)); sheet.position.copy(p).add(new THREE.Vector3(0, 1.2, 0.6));
+    const pillow = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.5, 1), std(0xffffff)); pillow.position.copy(p).add(new THREE.Vector3(0, 1.25, -1.7));
+    const head = new THREE.Mesh(new THREE.BoxGeometry(3, 2.4, 0.3), std(0x6a4028)); head.position.copy(p).add(new THREE.Vector3(0, 1.2, -2.5));
+    [bed, sheet, pillow, head].forEach(m => { m.rotation.y = phc(0) - Math.PI / 2 + 0.18; scene.add(m); });
+    const wp = at(0, 0.38, -0.2);
+    const win = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 0.3), std(0xe8dcc0)); win.position.copy(wp).add(new THREE.Vector3(0, 2.6, 0));
+    const glass = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 2.4), new THREE.MeshBasicMaterial({ color: 0x20305a }));
+    glass.position.copy(win.position).add(new THREE.Vector3(0, 0, 0.16));
+    const moon = new THREE.Mesh(new THREE.CircleGeometry(0.4, 12), new THREE.MeshBasicMaterial({ color: 0xfff4c0 }));
+    moon.position.copy(glass.position).add(new THREE.Vector3(0.5, 0.5, 0.01));
+    scene.add(win, glass, moon);
   }
-  // 2 꽃나무와 그림 속 바다 (바닥, 서쪽)
+  // 1 꽃나무
   {
-    const fcols = [0xf08aa0, 0xf8d070, 0xa0b8f8, 0xf0f0f0];
-    for (let k = 0; k < 9; k++) {
-      const p = spiral(0.06 + k * 0.022), out = p.clone().setY(0).normalize();
-      const side = k % 2 ? 2.6 : -2.2;
-      const x = p.x + out.x * side, z = p.z + out.z * side, h = 3 + (k % 3) * 1.5;
-      const st = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.2, h, 6), new THREE.MeshStandardMaterial({ color: 0x5a9a5a }));
-      st.position.set(x, h / 2, z);
-      const fl = new THREE.Mesh(new THREE.SphereGeometry(0.9, 10, 8), new THREE.MeshStandardMaterial({ color: fcols[k % 4] }));
-      fl.position.set(x, h + 0.4, z);
-      scene.add(st, fl);
+    const cols = [0xf8f0f0, 0xf8d070, 0xe05070, 0xf0a0c8, 0xffffff];
+    for (let i = 0; i < 7; i++) {
+      const p = at(1, 0.3 + (i % 3) * 0.1, (i - 3) * 0.08), h = 5 + (i % 3) * 2;
+      const st = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.35, h, 6), std(0x4a8a4a)); st.position.copy(p).add(new THREE.Vector3(0, h / 2, 0));
+      const fl = new THREE.Mesh(new THREE.SphereGeometry(1.4, 12, 8), std(cols[i % 5])); fl.position.copy(p).add(new THREE.Vector3(0, h + 0.8, 0));
+      const lf = new THREE.Mesh(new THREE.SphereGeometry(0.8, 6, 4), std(0x5aa05a)); lf.scale.set(1.6, 0.3, 0.8); lf.position.copy(p).add(new THREE.Vector3(0.8, h * 0.45, 0));
+      scene.add(st, fl, lf);
     }
-    const fp = spiral(0.27), out = fp.clone().setY(0).normalize();
-    const frame = new THREE.Mesh(new THREE.BoxGeometry(6, 4.5, 0.4), new THREE.MeshStandardMaterial({ color: 0xc8a050 }));
-    frame.position.set(fp.x + out.x * 3, 2.8, fp.z + out.z * 3); frame.lookAt(0, 2.8, 0);
-    const sea = new THREE.Mesh(new THREE.PlaneGeometry(5, 3.5), new THREE.MeshBasicMaterial({ color: 0x4a7ac8 }));
-    sea.position.copy(frame.position).add(out.clone().multiplyScalar(-0.25)); sea.lookAt(0, 2.8, 0);
-    const boat = new THREE.Mesh(new THREE.ConeGeometry(0.6, 1.8, 3), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-    boat.position.copy(sea.position).add(out.clone().multiplyScalar(-0.05)).add(new THREE.Vector3(0, -0.4, 0)); boat.rotation.z = Math.PI / 2;
-    scene.add(frame, sea, boat);
+    const pot = new THREE.Mesh(new THREE.CylinderGeometry(1.4, 1, 1.6, 12), std(0xb0603a));
+    pot.position.copy(at(1, 0.55)).add(new THREE.Vector3(0, 0.8, 0)); scene.add(pot);
   }
-  // 3 황새의 비와 쥐의 결혼식 (첫째 단)
+  // 2 그림 속 배: 액자 + 연못 + 배
+  {
+    const p = at(2, 0.36), o = outward(2);
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(7, 5, 0.5), std(0xc8a050));
+    frame.position.copy(p).add(new THREE.Vector3(0, 3.5, 0)); frame.lookAt(frame.position.clone().add(o));
+    const pic = new THREE.Mesh(new THREE.PlaneGeometry(6, 4), new THREE.MeshBasicMaterial({ color: 0x4a7ac8 }));
+    pic.position.copy(frame.position).add(o.clone().multiplyScalar(0.27)); pic.lookAt(pic.position.clone().add(o));
+    const sail = new THREE.Mesh(new THREE.ConeGeometry(0.7, 1.8, 3), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    sail.position.copy(pic.position).add(o.clone().multiplyScalar(0.05)).add(new THREE.Vector3(0, 0.2, 0));
+    scene.add(frame, pic, sail);
+    const pp = at(2, 0.5);
+    const pond = new THREE.Mesh(new THREE.CircleGeometry(3, 24), new THREE.MeshBasicMaterial({ color: 0x5a9ae8 }));
+    pond.position.copy(pp).add(new THREE.Vector3(0, 0.2, 0)); pond.lookAt(pond.position.clone().sub(C));
+    const hull = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.6, 1), std(0x8a5a3a)); hull.position.copy(pp).add(new THREE.Vector3(0, 0.6, 0));
+    const ms = new THREE.Mesh(new THREE.ConeGeometry(0.6, 1.8, 3), std(0xffffff)); ms.position.copy(hull.position).add(new THREE.Vector3(0, 1.2, 0));
+    scene.add(pond, hull, ms);
+  }
+  // 3 비와 황새: 비구름 + 비
+  const CLOUD = at(3, 0.42).add(new THREE.Vector3(0, 9, 0));
+  {
+    for (let i = 0; i < 7; i++) {
+      const c = new THREE.Mesh(new THREE.SphereGeometry(1.8 + (i % 3) * 0.5, 10, 8), std(0x6a7088));
+      c.position.copy(CLOUD).add(new THREE.Vector3((i - 3) * 1.6, Math.sin(i) * 0.6, Math.cos(i * 2) * 1.2)); scene.add(c);
+    }
+  }
   const rain = (() => {
-    const n = 300, g = new THREE.BufferGeometry(), p = new Float32Array(n * 3), base = [];
+    const n = 260, g = new THREE.BufferGeometry(), p = new Float32Array(n * 3), base = [];
     for (let i = 0; i < n; i++) {
-      const t = 0.4 + Math.random() * 0.17, s = spiral(t);
-      base.push([s.x + (Math.random() - 0.5) * 4, s.z + (Math.random() - 0.5) * 4, s.y]);
-      p[i*3] = base[i][0]; p[i*3+1] = s.y + Math.random() * 10; p[i*3+2] = base[i][1];
+      const s = at(3, 0.32 + Math.random() * 0.22, (Math.random() - 0.5) * 0.5);
+      base.push(s.y); p[i*3] = s.x; p[i*3+1] = s.y + Math.random() * 8; p[i*3+2] = s.z;
     }
     g.setAttribute("position", new THREE.BufferAttribute(p, 3));
-    scene.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0xa8c8ff, size: 0.25, transparent: true, opacity: 0.8 })));
+    scene.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0xa8c8ff, size: 0.3, transparent: true, opacity: 0.85 })));
     return { g, p, base, n };
   })();
   const storks = [];
-  for (let k = 0; k < 4; k++) {
+  for (let k = 0; k < 3; k++) {
     const s = new THREE.Group();
-    const b = new THREE.Mesh(new THREE.SphereGeometry(0.5, 8, 6), new THREE.MeshBasicMaterial({ color: 0xffffff })); b.scale.set(1.8, 0.7, 0.7);
-    const w = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 3.2), new THREE.MeshBasicMaterial({ color: 0xf0f0f0, side: THREE.DoubleSide })); w.rotation.x = Math.PI / 2;
-    const beak = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.8, 5), new THREE.MeshBasicMaterial({ color: 0xe06030 })); beak.rotation.z = -Math.PI / 2; beak.position.x = 1.2;
+    const b = new THREE.Mesh(new THREE.SphereGeometry(0.6, 8, 6), new THREE.MeshBasicMaterial({ color: 0xffffff })); b.scale.set(1.8, 0.7, 0.7);
+    const w = new THREE.Mesh(new THREE.PlaneGeometry(1, 4), new THREE.MeshBasicMaterial({ color: 0xf0f0f0, side: THREE.DoubleSide })); w.rotation.x = Math.PI / 2;
+    const beak = new THREE.Mesh(new THREE.ConeGeometry(0.12, 1, 5), new THREE.MeshBasicMaterial({ color: 0xe06030 })); beak.rotation.z = -Math.PI / 2; beak.position.x = 1.4;
     s.add(b, w, beak); scene.add(s); storks.push(s);
   }
+  // 4 쥐 결혼식: 골무 + 쥐 행렬 + 작은 아치
   {
-    const mp = spiral(0.53);
-    const thimble = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.6, 0.8, 12), new THREE.MeshStandardMaterial({ color: 0xc8c8d0, metalness: 0.6, roughness: 0.3 }));
-    const out = mp.clone().setY(0).normalize();
-    thimble.position.set(mp.x + out.x * 2.4, mp.y + 0.1, mp.z + out.z * 2.4); scene.add(thimble);
-    for (let k = 0; k < 8; k++) {
-      const q = spiral(0.53 - k * 0.006);
-      const m = new THREE.Mesh(new THREE.SphereGeometry(0.22, 6, 4), new THREE.MeshBasicMaterial({ color: 0x8a8a96 }));
-      m.scale.set(1.4, 0.8, 0.8);
-      m.position.set(q.x + out.x * 2.4, q.y - 0.05, q.z + out.z * 2.4); scene.add(m);
+    const p = at(4, 0.42);
+    const th = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.9, 2.6, 16), new THREE.MeshStandardMaterial({ color: 0xc8c8d0, metalness: 0.5, roughness: 0.3 }));
+    th.position.copy(p).add(new THREE.Vector3(0, 1.3, 0)); scene.add(th);
+    const arch = new THREE.Mesh(new THREE.TorusGeometry(1.4, 0.15, 6, 16, Math.PI), std(0xf0a0c8));
+    const ap = at(4, 0.32); arch.position.copy(ap).add(new THREE.Vector3(0, 0.2, 0)); arch.lookAt(arch.position.clone().add(outward(4).applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2))); scene.add(arch);
+    for (let i = 0; i < 10; i++) {
+      const q = at(4, 0.34 + i * 0.016, 0.12);
+      const m = new THREE.Mesh(new THREE.SphereGeometry(0.35, 8, 6), std(i === 4 ? 0xffffff : 0x8a8a96)); m.scale.set(1.5, 0.8, 0.8);
+      m.position.copy(q).add(new THREE.Vector3(0, 0.3, 0)); scene.add(m);
     }
   }
-  // 4 그림 없는 우산 (둘째 단)
-  const PLAIN = spiral(0.78);
+  // 5 별 닦는 밤: 사다리 + 별 더미
   {
-    const um = new THREE.MeshStandardMaterial({ color: 0x55555f, side: THREE.DoubleSide, roughness: 0.9 });
-    const can = new THREE.Mesh(new THREE.SphereGeometry(3.4, 8, 6, 0, Math.PI * 2, 0, 1.1), um);
-    const out = PLAIN.clone().setY(0).normalize();
-    const base = new THREE.Vector3(PLAIN.x + out.x * 0.5, PLAIN.y - 0.3, PLAIN.z + out.z * 0.5);
-    can.position.copy(base).add(new THREE.Vector3(0, 2.6, 0));
-    const sh = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 6, 6), new THREE.MeshStandardMaterial({ color: 0x2a2a30 }));
-    sh.position.copy(base).add(new THREE.Vector3(0, 3, 0));
-    scene.add(can, sh);
+    const p = at(5, 0.42);
+    const lm = std(0x8a6a4a);
+    for (const sx of [-0.6, 0.6]) {
+      const r = new THREE.Mesh(new THREE.BoxGeometry(0.2, 12, 0.2), lm); r.position.copy(p).add(new THREE.Vector3(sx, 6, 0)); r.rotation.z = 0.15; scene.add(r);
+    }
+    for (let i = 0; i < 10; i++) {
+      const rung = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.12, 0.12), lm);
+      rung.position.copy(p).add(new THREE.Vector3(-0.15 * (i + 0.5) * 1.2 * 0.75, 0.6 + i * 1.2, 0)); scene.add(rung);
+    }
+    const sm = new THREE.MeshBasicMaterial({ color: 0xffe8a0 });
+    for (let i = 0; i < 14; i++) {
+      const s = new THREE.Mesh(new THREE.OctahedronGeometry(0.5), sm);
+      const q = at(5, 0.5 + (i % 4) * 0.02, (i - 7) * 0.025);
+      s.position.copy(q).add(new THREE.Vector3(0, 0.5 + Math.floor(i / 4) * 0.5, 0)); scene.add(s);
+    }
+  }
+  // 6 그림 없는 칸: 아무것도 없음, 회색 안개만
+  {
+    const fog = new THREE.Mesh(new THREE.SphereGeometry(6, 16, 10), new THREE.MeshBasicMaterial({ color: 0x8a8a92, transparent: true, opacity: 0.18 }));
+    fog.position.copy(at(6, 0.42)).add(new THREE.Vector3(0, 2, 0)); fog.scale.y = 0.4; scene.add(fog);
   }
 
-  // 별 닦는 다락 (선택)
-  const LOFT = new THREE.Vector3(36, 10, -10);
+  // 메인 길: 남쪽 가장자리 → 칸을 k 순서대로 돌며 위로 → 꼭대기
+  const pts = [surf(THMAX + 0.02, PH0, 0.4)];
+  for (let i = 0; i <= 120; i++) {
+    const t = i / 120;
+    pts.push(surf(0.6 - 0.44 * t, PH0 + t * 6 * STEP, 0.4));
+  }
+  pts.push(surf(0.08, phc(6) + 0.3, 0.4), TIP.clone().add(new THREE.Vector3(1.5, 0.5, 1.5)));
+  const path = new THREE.CatmullRomCurve3(pts, false, "catmullrom", 0.3);
+  scene.add(new THREE.Mesh(new THREE.TubeGeometry(path, 600, 0.3, 6, false), new THREE.MeshBasicMaterial({ color: 0xfffbe8 })));
+  const onPath = k => { // 길이 칸 k 가운데를 지나는 지점
+    const t = k / 6; return surf(0.6 - 0.44 * t, PH0 + t * 6 * STEP, 0.4);
+  };
+
+  // 손잡이 고리 (선택): 흰 칸 가장자리 → 손잡이 아래 고리
+  const HOOK = new THREE.Vector3(8, SHAFT_BOTTOM - 0.2, 0);
   {
-    const top = new THREE.Mesh(new THREE.CylinderGeometry(4, 3.6, 1, 10), pearl); top.position.copy(LOFT).add(new THREE.Vector3(0, -0.5, 0));
-    const u = new THREE.Mesh(new THREE.ConeGeometry(3.6, 8, 10), new THREE.MeshStandardMaterial({ color: 0x3a3848, flatShading: true }));
-    u.rotation.x = Math.PI; u.position.copy(LOFT).add(new THREE.Vector3(0, -5, 0));
-    const roof = new THREE.Mesh(new THREE.ConeGeometry(2.4, 2.2, 4), new THREE.MeshStandardMaterial({ color: 0x6a5a8a }));
-    roof.position.copy(LOFT).add(new THREE.Vector3(-1, 3.4, 0)); roof.rotation.y = Math.PI / 4;
-    const hut = new THREE.Mesh(new THREE.BoxGeometry(2.8, 2.3, 2.8), pearl); hut.position.copy(LOFT).add(new THREE.Vector3(-1, 1.15, 0));
-    scene.add(top, u, roof, hut);
-    for (let k = 0; k < 6; k++) {
-      const s = new THREE.Mesh(new THREE.OctahedronGeometry(0.35), new THREE.MeshBasicMaterial({ color: 0xffeeb0 }));
-      s.position.copy(LOFT).add(new THREE.Vector3(1.6 + (k % 2) * 0.8, 0.4 + Math.floor(k / 2) * 0.1, -1.2 + Math.floor(k / 2) * 1.1));
-      scene.add(s);
+    const plat = new THREE.Mesh(new THREE.CylinderGeometry(2.6, 2.6, 0.6, 16), std(0xdedcea));
+    plat.position.copy(HOOK); scene.add(plat);
+    const from = surf(THMAX, phc(7), 0.4), lp = [];
+    for (let i = 0; i <= 16; i++) {
+      const t = i / 16, p = from.clone().lerp(HOOK.clone().add(new THREE.Vector3(0, 0.5, 0)), t);
+      p.x += Math.sin(t * Math.PI) * 4; lp.push(p);
     }
-    const from = spiral(0.5).clone(), to = LOFT.clone().add(new THREE.Vector3(-3.4, 0.3, 0));
-    const lp = [];
-    for (let k = 0; k <= 14; k++) { const p = from.clone().lerp(to, k / 14); p.y += Math.sin(k / 14 * Math.PI) * 2; lp.push(p); }
     const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(lp), new THREE.LineDashedMaterial({ color: 0xfffbe8, dashSize: 0.9, gapSize: 0.6 }));
     line.computeLineDistances(); scene.add(line);
   }
 
-  // 최초의 소용돌이: 섬 둘레를 도는 빛 입자
-  const swirl = (() => {
-    const n = 500, g = new THREE.BufferGeometry(), p = new Float32Array(n * 3), seed = [];
-    for (let i = 0; i < n; i++) seed.push({ a: Math.random() * 6.28, r: 30 + Math.random() * 14, y: -6 + Math.random() * 30, s: 0.1 + Math.random() * 0.15 });
-    g.setAttribute("position", new THREE.BufferAttribute(p, 3));
-    scene.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0xfff4d0, size: 0.4, transparent: true, opacity: 0.75 })));
-    return { g, p, seed, n };
-  })();
-
-  // 다리 (모두 열림)
+  // 다리 (모두 열림): 남쪽 칸 가장자리에 모임
+  const rimS = surf(THMAX + 0.02, PH0, 0.2);
   const bridge = (a) => {
-    const from = new THREE.Vector3(Math.cos(a) * (R - 0.5), -0.2, Math.sin(a) * (R - 0.5));
-    const to = new THREE.Vector3(Math.cos(a) * 52, -0.2, Math.sin(a) * 52);
+    const to = new THREE.Vector3(Math.cos(a) * 62, rimS.y, Math.sin(a) * 62);
+    const from = rimS.clone().add(new THREE.Vector3(Math.cos(a) * 1.5, 0, Math.sin(a) * 1.5));
     const m = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.3, from.distanceTo(to)), new THREE.MeshBasicMaterial({ color: 0xffd880, transparent: true, opacity: 0.9 }));
     m.position.copy(from).add(to).multiplyScalar(0.5); m.lookAt(to); scene.add(m);
     return to;
   };
-  const daaTo = bridge(Math.PI / 2), binTo = bridge(Math.PI / 2 + 0.75), chokTo = bridge(Math.PI / 2 - 0.75);
+  const daaTo = bridge(Math.PI / 2), binTo = bridge(Math.PI / 2 + 0.55), chokTo = bridge(Math.PI / 2 - 0.55);
 
-  // 섬 아래: 거꾸로 비친 쌍둥이 왕관과 말 탄 형 (타우미엘)
-  const TWIN_Y = -48;
+  // 그림자: 손잡이 아래 거꾸로 매달린 검은 우산 + 말 탄 형 (타우미엘)
+  const SH_Y = -56;
   {
-    const dm = new THREE.MeshStandardMaterial({ color: 0x3a1018, transparent: true, opacity: 0.55, emissive: 0x14040a });
-    const twin = buildCrown(dm, true);
-    twin.rotation.z = Math.PI; twin.position.y = TWIN_Y; scene.add(twin);
-    const dark = new THREE.Mesh(new THREE.SphereGeometry(1.6, 16, 12), new THREE.MeshBasicMaterial({ color: 0x000000 }));
-    dark.position.y = TWIN_Y - 11; scene.add(dark);
+    const dm = new THREE.MeshStandardMaterial({ color: 0x24080e, transparent: true, opacity: 0.7, side: THREE.DoubleSide, emissive: 0x0e0206 });
+    const black = new THREE.Mesh(new THREE.SphereGeometry(RS * 0.7, 16, 10, 0, Math.PI * 2, 0, THMAX), dm);
+    black.rotation.x = Math.PI; black.position.set(0, SH_Y + RS * 0.7, 0); scene.add(black);
+    const bs = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, SHAFT_BOTTOM - SH_Y - 2, 8), new THREE.MeshBasicMaterial({ color: 0x2a0a12 }));
+    bs.position.y = (SHAFT_BOTTOM - 2 + SH_Y) / 2; scene.add(bs);
   }
   const rider = new THREE.Group();
   {
-    const m = new THREE.MeshBasicMaterial({ color: 0x1a0a10 });
-    const horse = new THREE.Mesh(new THREE.BoxGeometry(3, 1.2, 1), m); horse.position.y = -1.6;
-    const neck = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.6, 0.6), m); neck.position.set(1.5, -2.6, 0); neck.rotation.z = 0.5;
+    const m = new THREE.MeshBasicMaterial({ color: 0x3a1018 });
+    const horse = new THREE.Mesh(new THREE.BoxGeometry(3, 1.2, 1), m); horse.position.y = 1.6;
+    const neck = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.6, 0.6), m); neck.position.set(1.5, 2.6, 0); neck.rotation.z = -0.5;
     for (const [x, z] of [[-1.1, -0.35], [-1.1, 0.35], [1.1, -0.35], [1.1, 0.35]]) {
-      const l = new THREE.Mesh(new THREE.BoxGeometry(0.25, 1.6, 0.25), m); l.position.set(x, -0.4, z); rider.add(l);
+      const l = new THREE.Mesh(new THREE.BoxGeometry(0.25, 1.6, 0.25), m); l.position.set(x, 0.4, z); rider.add(l);
     }
-    const cloak = new THREE.Mesh(new THREE.ConeGeometry(0.9, 2.6, 8), new THREE.MeshBasicMaterial({ color: 0x2a0a18 })); cloak.position.y = -3.3; cloak.rotation.z = Math.PI;
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.4, 8, 6), m); head.position.y = -4.9;
+    const cloak = new THREE.Mesh(new THREE.ConeGeometry(0.9, 2.6, 8), new THREE.MeshBasicMaterial({ color: 0x5a1a2a })); cloak.position.y = 3.3;
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.4, 8, 6), m); head.position.y = 4.9;
     rider.add(horse, neck, cloak, head);
     scene.add(rider);
   }
@@ -393,15 +433,16 @@ aside { display: grid; gap: 14px; min-width: 0; }
   const saveMat = new THREE.MeshBasicMaterial({ color: 0x8fe3d0 });
   const markers = [];
   const mark = (p, mat, s) => { const m = new THREE.Mesh(new THREE.OctahedronGeometry(s), mat); m.position.copy(p); scene.add(m); markers.push({ m, y: p.y }); };
-  const up = (t, h = 1.6) => spiral(t).add(new THREE.Vector3(0, h, 0));
-  [0.1, 0.18, 0.26, 0.42, 0.49, 0.57].forEach(t => mark(up(t), fightMat, 0.45));
-  mark(up(0.78, 2.2), fightMat, 0.75);
-  mark(new THREE.Vector3(2.5, 11.5, 2.5), fightMat, 0.85);
-  mark(LOFT.clone().add(new THREE.Vector3(1.5, 2.2, 1.6)), fightMat, 0.45);
-  mark(LOFT.clone().add(new THREE.Vector3(1.8, 2.2, -1.8)), fightMat, 0.45);
-  mark(new THREE.Vector3(-3.5, 2, 23), saveMat, 0.6);
-  mark(up(0.53, 2.2), saveMat, 0.6);
-  mark(up(0.86, 1.9), saveMat, 0.6);
+  const lift = (p, h) => p.clone().add(new THREE.Vector3(0, h, 0));
+  [1, 2, 3, 4].forEach(k => mark(lift(onPath(k), 1.6), fightMat, 0.45));
+  mark(lift(onPath(4.6), 1.6), fightMat, 0.45);
+  mark(lift(onPath(5.3), 1.6), fightMat, 0.45);
+  mark(lift(onPath(6), 2), fightMat, 0.75);
+  mark(lift(TIP, 7), fightMat, 0.85);
+  mark(lift(HOOK, 2), fightMat, 0.45);
+  mark(lift(HOOK, 2).add(new THREE.Vector3(-1.8, 0, 1)), fightMat, 0.45);
+  mark(lift(onPath(0), 1.8), saveMat, 0.6);
+  mark(lift(onPath(3.2), 1.8), saveMat, 0.6);
 
   // 라벨
   const labels = [];
@@ -410,40 +451,34 @@ aside { display: grid; gap: 14px; min-width: 0; }
     el.className = "tag" + (cls ? " " + cls : "");
     el.innerHTML = html; labelsEl.appendChild(el); labels.push({ el, pos });
   };
-  label('<span class="n">1</span>왕관의 문', new THREE.Vector3(0, 8.5, 24.5));
-  label('<span class="n">2</span>꽃나무와 그림 속 바다', up(0.17, 6.5));
-  label('<span class="n">3</span>황새의 비와 쥐의 결혼식', up(0.48, 8));
-  label('<span class="n">+</span>별 닦는 다락 (선택)', LOFT.clone().add(new THREE.Vector3(0, 6.5, 0)), "opt");
-  label('<span class="n">4</span>그림 없는 우산', up(0.78, 7.5));
-  label('<span class="n">5</span>근원의 빛', new THREE.Vector3(0, 17, 0), "boss");
-  label('다아트 쪽에서 (심연 건너)', daaTo.clone().setY(2));
-  label('비나 쪽에서', binTo.clone().setY(2));
-  label('호크마 쪽에서', chokTo.clone().setY(2));
-  label('위: 아인 소프 (끝없는 빛)', new THREE.Vector3(0, 64, 0), "sealed");
-  label('섬 아래: 같은 이름의 형, 죽음 (타우미엘)', new THREE.Vector3(0, TWIN_Y - 16, 0), "dark");
+  for (let k = 0; k < 7; k++) {
+    const pn = PANELS[k];
+    label('<span class="n">' + (k + 1) + '</span>' + (pn.day ? pn.day + '요일 · ' : '') + pn.name, lift(at(k, 0.44), k === 3 ? 13 : 8), k === 6 ? "sealed" : "");
+  }
+  label('<span class="n">8</span>꼭대기 왕관 · 근원의 빛', lift(TIP, 9), "boss");
+  label('<span class="n">+</span>손잡이 고리 (선택)', lift(HOOK, 4), "opt");
+  label('흰 칸 · 손잡이로 내려가는 곳', lift(at(7, 0.5), 3), "opt");
+  label('다아트 쪽에서 (심연 건너)', lift(daaTo, 2));
+  label('비나 쪽에서', lift(binTo, 2));
+  label('호크마 쪽에서', lift(chokTo, 2));
+  label('그림자: 검은 우산과 말 탄 형, 죽음 (타우미엘)', new THREE.Vector3(0, SH_Y - 6, 0), "dark");
 
   // 카메라
-  const view = { theta: 0.7, phi: 1.02, radius: 100, target: new THREE.Vector3(0, 8, 0) };
+  const view = { theta: 0.5, phi: 0.85, radius: 105, target: new THREE.Vector3(0, -2, 0) };
   let goal = null;
   const V = {
-    top:    { theta: 0.0, phi: 0.12, radius: 95, target: new THREE.Vector3(0, 0, 0) },
-    angle:  { theta: 0.7, phi: 1.02, radius: 100, target: new THREE.Vector3(0, 8, 0) },
-    far:    { theta: 0.5, phi: 1.3, radius: 150, target: new THREE.Vector3(0, 14, 0) },
-    summit: { theta: 0.9, phi: 1.15, radius: 30, target: new THREE.Vector3(0, 10, 0) },
-    under:  { theta: 0.4, phi: 1.95, radius: 85, target: new THREE.Vector3(0, -24, 0) },
+    top:    { theta: 0.0, phi: 0.1, radius: 100, target: new THREE.Vector3(0, 0, 0) },
+    angle:  { theta: 0.5, phi: 0.85, radius: 105, target: new THREE.Vector3(0, -2, 0) },
+    side:   { theta: 0.3, phi: 1.5, radius: 120, target: new THREE.Vector3(0, -18, 0) },
+    summit: { theta: 0.6, phi: 0.9, radius: 32, target: new THREE.Vector3(0, 12, 0) },
+    under:  { theta: 0.4, phi: 2.05, radius: 90, target: new THREE.Vector3(0, -30, 0) },
   };
   function setGoal(g) { if (reduceMotion) { Object.assign(view, { theta: g.theta, phi: g.phi, radius: g.radius }); view.target.copy(g.target); } else goal = g; }
   document.getElementById("vTop").onclick = () => setGoal(V.top);
   document.getElementById("vAngle").onclick = () => setGoal(V.angle);
-  document.getElementById("vFar").onclick = () => setGoal(V.far);
+  document.getElementById("vSide").onclick = () => setGoal(V.side);
   document.getElementById("vSummit").onclick = () => setGoal(V.summit);
   document.getElementById("vUnder").onclick = () => setGoal(V.under);
-  const tUmb = document.getElementById("tUmb");
-  tUmb.onclick = () => {
-    umbrella.visible = !umbrella.visible;
-    tUmb.setAttribute("aria-pressed", String(umbrella.visible));
-    tUmb.textContent = umbrella.visible ? "우산 표시" : "우산 숨김";
-  };
   const tLabels = document.getElementById("tLabels");
   const hint = stage.querySelector(".hint");
   tLabels.onclick = () => {
@@ -452,7 +487,7 @@ aside { display: grid; gap: 14px; min-width: 0; }
     tLabels.setAttribute("aria-pressed", String(on));
     tLabels.textContent = on ? "글자 표시" : "글자 숨김";
   };
-  const zoom = f => { goal = null; view.radius = Math.min(200, Math.max(12, view.radius * f)); };
+  const zoom = f => { goal = null; view.radius = Math.min(220, Math.max(12, view.radius * f)); };
   document.getElementById("zIn").onclick = () => zoom(0.85);
   document.getElementById("zOut").onclick = () => zoom(1.18);
   let drag = false, lx = 0, ly = 0;
@@ -486,27 +521,21 @@ aside { display: grid; gap: 14px; min-width: 0; }
     camera.position.set(target.x + radius * Math.sin(phi) * Math.sin(theta), target.y + radius * Math.cos(phi), target.z + radius * Math.sin(phi) * Math.cos(theta));
     camera.lookAt(target);
     const tt = reduceMotion ? 0 : t;
-    umbrella.rotation.y = tt * 0.08;
-    for (let i = 0; i < swirl.n; i++) {
-      const s = swirl.seed[i], a = s.a + tt * s.s;
-      swirl.p[i*3] = Math.cos(a) * s.r; swirl.p[i*3+1] = s.y + Math.sin(a * 2) * 1.5; swirl.p[i*3+2] = Math.sin(a) * s.r;
-    }
-    swirl.g.attributes.position.needsUpdate = true;
     if (!reduceMotion) {
       for (let i = 0; i < rain.n; i++) {
         rain.p[i*3+1] -= dt * 9;
-        if (rain.p[i*3+1] < rain.base[i][2]) rain.p[i*3+1] = rain.base[i][2] + 10;
+        if (rain.p[i*3+1] < rain.base[i]) rain.p[i*3+1] = rain.base[i] + 8;
       }
       rain.g.attributes.position.needsUpdate = true;
       markers.forEach((k, i) => { k.m.position.y = k.y + Math.sin(t * 2 + i) * 0.15; k.m.rotation.y = t; });
     }
     storks.forEach((s, i) => {
-      const a = tt * 0.25 + i * 0.5;
-      s.position.set(Math.cos(a) * 16, 12 + i * 0.8, Math.sin(a) * 16);
+      const a = tt * 0.4 + i * 0.8;
+      s.position.copy(CLOUD).add(new THREE.Vector3(Math.cos(a) * 9, 2 + i, Math.sin(a) * 9));
       s.rotation.y = -a - Math.PI / 2;
     });
     const ra = -tt * 0.3;
-    rider.position.set(Math.cos(ra) * 30, TWIN_Y - 3, Math.sin(ra) * 30);
+    rider.position.set(Math.cos(ra) * 32, SH_Y + 2, Math.sin(ra) * 32);
     rider.rotation.y = -ra + Math.PI / 2;
     core.scale.setScalar(1 + Math.sin(tt * 1.5) * 0.08);
     renderer.render(scene, camera);
